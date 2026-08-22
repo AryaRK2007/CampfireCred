@@ -1,0 +1,41 @@
+.font-display { font-family: 'Space Grotesk', sans-serif; }
+.font-body { font-family: 'Inter', sans-serif; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+body { font-family: 'Inter', sans-serif; }
+
+/* Campfire Animation Glows & Particles */
+.ember {
+  position: absolute;
+  bottom: -15px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, #fef08a 0%, #f59e0b 60%, #ef4444 100%);
+  box-shadow: 0 0 8px #f59e0b;
+  opacity: 0;
+  animation-name: campfire-rise;
+  animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1);
+  animation-iteration-count: infinite;
+}
+
+@keyframes campfire-rise {
+  0% {
+    transform: translateY(0) translateX(0) scale(1);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-500px) translateX(35px) scale(0.2);
+    opacity: 0;
+  }
+}
+
+.fire-glow {
+  background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, rgba(239, 68, 68, 0.05) 50%, rgba(0,0,0,0) 80%);
+  animation: pulse-glow 3s infinite alternate ease-in-out;
+}
+
+@keyframes pulse-glow {
+  0% { transform: scale(0.95); opacity: 0.6; }
+  100% { transform: scale(1.1); opacity: 1; }
+}
