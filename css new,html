@@ -1,0 +1,18 @@
+@keyframes logoFlamePulse {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.6)) drop-shadow(0 0 12px rgba(239, 68, 68, 0.4));
+  }
+  25% {
+    transform: scale(1.08) rotate(-3deg);
+    filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.8)) drop-shadow(0 0 18px rgba(239, 68, 68, 0.6));
+  }
+  75% {
+    transform: scale(1.04) rotate(3deg);
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.7)) drop-shadow(0 0 14px rgba(220, 38, 38, 0.5));
+  }
+}
+
+.animate-logo-flame {
+  animation: logoFlamePulse 2.5s infinite ease-in-out;
+}
