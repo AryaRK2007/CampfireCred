@@ -61,9 +61,9 @@ const getTheme = (dark) => ({
 function Icon({ name, className = "h-4 w-4", strokeWidth = 2 }) {
   const ref = useRef(null);
   useEffect(() => {
-    if (ref.current) {
+    if (ref.current && window.lucide) {
       ref.current.innerHTML = `<i data-lucide="${name}" class="${className}" stroke-width="${strokeWidth}"></i>`;
-      lucide.createIcons({ attrs: { class: className, 'stroke-width': strokeWidth }, nameAttr: 'data-lucide' });
+      window.lucide.createIcons({ attrs: { class: className, 'stroke-width': strokeWidth }, nameAttr: 'data-lucide' });
     }
   }, [name, className, strokeWidth]);
   return <span ref={ref} className="inline-flex items-center justify-center" />;
@@ -118,7 +118,7 @@ function Navbar({ user, onLogout, onOpenProfile, activeTab, setActiveTab, theme,
               <button onClick={onOpenProfile} className="h-8 w-8 rounded-full bg-gradient-to-r from-amber-500 to-indigo-600 text-white flex items-center justify-center text-xs font-semibold shadow-sm">
                 {user.initials}
               </button>
-              <button onClick={onLogout} className={`p-2 rounded-lg ${theme.textFaint} ${theme.hoverBg}`}>
+              <button onClick={onLogout} aria-label="Log out" className={`p-2 rounded-lg ${theme.textFaint} ${theme.hoverBg}`}>
                 <Icon name="log-out" className="h-4 w-4" />
               </button>
             </>
@@ -138,7 +138,7 @@ function Modal({ title, onClose, children, theme }) {
       <div className={`rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-6 shadow-2xl ${theme.cardBg} border ${theme.cardBorder}`}>
         <div className="flex items-center justify-between mb-4">
           <h3 className={`font-display font-bold ${theme.textPrimary}`}>{title}</h3>
-          <button onClick={onClose} className={`p-1 rounded-lg ${theme.textFaint} ${theme.hoverBg}`}><Icon name="x" className="h-4.5 w-4.5" /></button>
+          <button onClick={onClose} aria-label="Close modal" className={`p-1 rounded-lg ${theme.textFaint} ${theme.hoverBg}`}><Icon name="x" className="h-4.5 w-4.5" /></button>
         </div>
         {children}
       </div>
@@ -149,19 +149,16 @@ function Modal({ title, onClose, children, theme }) {
 function AuthModal({ onClose, onAuthenticate, theme }) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [step, setStep] = useState("email"); // 'email' or 'details'
+  const [step, setStep] = useState("email");
 
   const handleEmailNext = (e) => {
     e.preventDefault();
     if (!email.trim()) return;
     
-    // Check if user already exists in localStorage database
     const existingUsers = JSON.parse(localStorage.getItem("campfire_users") || "{}");
     if (existingUsers[email]) {
-      // Log them straight in
       onAuthenticate(existingUsers[email]);
     } else {
-      // Auto-extract name if it's a standard email format, else ask for details
       const derivedName = email.split("@")[0].replace(/[._]/g, " ");
       const capitalized = derivedName.charAt(0).toUpperCase() + derivedName.slice(1);
       setName(capitalized);
@@ -178,11 +175,10 @@ function AuthModal({ onClose, onAuthenticate, theme }) {
       email,
       studentId,
       initials,
-      cred: 100, // Welcome bonus creds for new user!
+      cred: 100,
       badges: ["Campfire Spark", "New Explorer"]
     };
 
-    // Save to local database
     const existingUsers = JSON.parse(localStorage.getItem("campfire_users") || "{}");
     existingUsers[email] = newUser;
     localStorage.setItem("campfire_users", JSON.stringify(existingUsers));
@@ -318,13 +314,29 @@ function QAFeed({ questions, setQuestions, user, setUser, onCredAwarded, upvoted
   const filtered = questions.filter((q) => (q.title + q.desc).toLowerCase().includes(search.toLowerCase()) && (activeTags.length === 0 || activeTags.includes(q.tag)));
 
   const toggleUpvote = (id) => {
-    setUpvoted((prev) => { const next = new Set(prev); next.has(id) ? next.delete(id) : next.add(id); return next; });
-    setQuestions((prev) => prev.map((q) => q.id === id ? { ...q, upvotes: q.upvotes + (upvoted.has(id) ? -1 : 1) } : q));
+    const isUpvoted = upvoted.has(id);
+    setUpvoted((prev) => {
+      const next = new Set(prev);
+      isUpvoted ? next.delete(id) : next.add(id);
+      return next;
+    });
+    setQuestions((prev) =>
+      prev.map((q) => (q.id === id ? { ...q, upvotes: q.upvotes + (isUpvoted ? -1 : 1) } : q))
+    );
   };
 
   const solveQuestion = (id) => {
     setQuestions((prev) => prev.map((q) => q.id === id ? { ...q, solved: true } : q));
-    setUser((prev) => ({ ...prev, cred: prev.cred + 50 }));
+    setUser((prev) => {
+      const updatedUser = { ...prev, cred: prev.cred + 50 };
+      localStorage.setItem("campfire_active_user", JSON.stringify(updatedUser));
+      const existingUsers = JSON.parse(localStorage.getItem("campfire_users") || "{}");
+      if (existingUsers[updatedUser.email]) {
+        existingUsers[updatedUser.email] = updatedUser;
+        localStorage.setItem("campfire_users", JSON.stringify(existingUsers));
+      }
+      return updatedUser;
+    });
     onCredAwarded();
   };
 
@@ -383,7 +395,7 @@ function QAFeed({ questions, setQuestions, user, setUser, onCredAwarded, upvoted
               {TAGS.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
             <textarea value={form.desc} onChange={(e) => setForm({ ...form, desc: e.target.value })} rows={4} placeholder="Description..." className={`w-full border rounded-xl px-3 py-2 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary}`} />
-            <button onClick={() => { if (!form.title) return; setQuestions([{ id: Date.now(), author: user.name, initials: user.initials, time: "just now", tag: form.tag, title: form.title, desc: form.desc, upvotes: 0, solved: false }, ...questions]); setShowAsk(false); }} className="w-full bg-amber-500 text-slate-950 font-bold py-2.5 rounded-xl">Publish</button>
+            <button onClick={() => { if (!form.title) return; setQuestions([{ id: Date.now(), author: user.name, initials: user.initials, time: "just now", tag: form.tag, title: form.title, desc: form.desc, upvotes: 0, solved: false }, ...questions]); setShowAsk(false); setForm({ title: "", tag: "React", desc: "" }); }} className="w-full bg-amber-500 text-slate-950 font-bold py-2.5 rounded-xl">Publish</button>
           </div>
         </Modal>
       )}
@@ -434,7 +446,11 @@ function SchedulePage({ type, theme }) {
 }
 
 function LeaderboardPage({ user, theme }) {
-  const merged = [...leaderboardBase, { id: "me", name: user.name, initials: user.initials, cred: user.cred, badges: user.badges }].sort((a, b) => b.cred - a.cred);
+  const merged = [
+    ...leaderboardBase.filter((e) => e.id !== "me" && e.name !== user.name),
+    { id: "me", name: user.name, initials: user.initials, cred: user.cred, badges: user.badges }
+  ].sort((a, b) => b.cred - a.cred);
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className={`rounded-2xl border ${theme.cardBg} ${theme.cardBorder} p-6 shadow-md`}>
