@@ -4,7 +4,11 @@ import {
   Check, Copy, LogOut, Award, Users, Calendar, Star, Zap, Sun, Moon,
   MessageSquare, TrendingUp, CalendarClock
 } from "lucide-react";
-
+import Navbar from '../components/Navbar.jsx';
+import Leaderboard from '../components/Leaderboard.jsx';
+import ProfileModal from '../components/ProfileModal.jsx';
+import QAFeed from '../components/QAFeed.jsx';
+import Scheduler from '../components/Scheduler.jsx';
 // ============================================================
 // DATA — swap for real API calls once backend is wired up
 // ============================================================
