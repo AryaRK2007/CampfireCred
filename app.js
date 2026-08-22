@@ -45,7 +45,7 @@ const getTheme = (dark) => ({
   cardBg: dark ? "bg-slate-900/90 backdrop-blur-sm" : "bg-white/90 backdrop-blur-sm",
   cardBorder: dark ? "border-slate-800" : "border-slate-200",
   pillBg: dark ? "bg-slate-800" : "bg-slate-100",
-  pillActive: dark ? "bg-amber-500 text-slate-950 font-bold shadow-lg shadow-amber-500/25 scale-105" : "bg-indigo-600 text-white shadow-sm font-semibold scale-105",
+  pillActive: dark ? "bg-amber-500 text-slate-950 font-bold shadow-lg shadow-amber-500/30 scale-105" : "bg-indigo-600 text-white shadow-sm font-semibold scale-105",
   pillInactive: dark ? "text-slate-400 hover:text-white" : "text-slate-500 hover:text-slate-800",
   inputBg: dark ? "bg-slate-800" : "bg-white",
   inputBorder: dark ? "border-slate-700" : "border-slate-300",
@@ -69,31 +69,48 @@ function Icon({ name, className = "h-4 w-4", strokeWidth = 2 }) {
   return <span ref={ref} className="inline-flex items-center justify-center" />;
 }
 
-// Background floating campfire sparks effect
+// Enhanced Campfire background animation with rich sparks & glowing ember dust
 function CampfireSparks() {
-  const sparks = Array.from({ length: 18 });
+  const sparks = Array.from({ length: 28 });
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
       <style>{`
         @keyframes floatUp {
-          0% { transform: translateY(105vh) translateX(0) scale(0.6); opacity: 0; }
-          20% { opacity: 0.8; }
-          80% { opacity: 0.8; }
-          100% { transform: translateY(-10vh) translateX(40px) scale(1.2); opacity: 0; }
+          0% { transform: translateY(105vh) translateX(0px) scale(0.4); opacity: 0; }
+          15% { opacity: 0.9; }
+          50% { transform: translateY(50vh) translateX(25px) scale(1.1); opacity: 0.7; }
+          85% { opacity: 0.9; }
+          100% { transform: translateY(-10vh) translateX(-20px) scale(0.8); opacity: 0; }
+        }
+        @keyframes emberPulse {
+          0%, 100% { opacity: 0.2; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.3); }
         }
         .spark {
           position: absolute;
           bottom: -20px;
-          background: radial-gradient(circle, rgba(251,191,36,1) 0%, rgba(249,115,22,0.8) 50%, rgba(239,68,68,0) 100%);
+          background: radial-gradient(circle, rgba(255,215,0,1) 0%, rgba(249,115,22,0.9) 60%, rgba(239,68,68,0) 100%);
           border-radius: 50%;
+          box-shadow: 0 0 8px rgba(251,191,36,0.8);
           animation: floatUp linear infinite;
         }
+        .ember-glow {
+          position: absolute;
+          border-radius: 50%;
+          filter: blur(80px);
+          animation: emberPulse 6s ease-in-out infinite;
+        }
       `}</style>
+      
+      {/* Background ambient campfire glow spots */}
+      <div className="ember-glow bg-amber-600/10 w-96 h-96 -bottom-20 -left-20"></div>
+      <div className="ember-glow bg-orange-600/10 w-96 h-96 top-1/3 -right-20" style={{ animationDelay: '3s' }}></div>
+
       {sparks.map((_, i) => {
-        const size = Math.random() * 6 + 3;
+        const size = Math.random() * 7 + 3;
         const left = Math.random() * 100;
-        const duration = Math.random() * 7 + 5;
-        const delay = Math.random() * 5;
+        const duration = Math.random() * 6 + 4;
+        const delay = Math.random() * 6;
         return (
           <div
             key={i}
@@ -121,19 +138,27 @@ function Navbar({ user, onLogout, onOpenProfile, activeTab, setActiveTab, theme,
   ];
 
   return (
-    <header className={`sticky top-0 z-40 transition-colors duration-300 ${theme.navBg} border-b ${theme.navBorder}`}>
+    <header className={`sticky top-0 z-40 transition-colors duration-300 ${theme.navBg} border-b ${theme.navBorder} shadow-lg backdrop-blur-md`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-        <button onClick={goHome} className="flex items-center gap-2 shrink-0 group text-left transition-transform hover:scale-105">
-          <div className="relative h-9 w-9 rounded-xl bg-gradient-to-tr from-amber-600 to-red-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
-            <Icon name="flame" className="h-5 w-5 text-amber-100 animate-pulse" strokeWidth={2.5} />
+        <button onClick={goHome} className="flex items-center gap-2.5 shrink-0 group text-left transition-transform hover:scale-105">
+          {/* Logo fixed with proper centered icon inside box */}
+          <div className="relative h-10 w-10 rounded-2xl bg-gradient-to-tr from-amber-600 via-orange-500 to-red-500 flex items-center justify-center shadow-lg shadow-amber-500/40 border border-amber-400/30 group-hover:rotate-6 transition-transform">
+            <div className="absolute inset-0 rounded-2xl bg-amber-400/20 animate-ping pointer-events-none"></div>
+            <Icon name="flame" className="h-6 w-6 text-amber-100 animate-pulse" strokeWidth={2.5} />
           </div>
-          <span className={`font-display text-lg font-bold tracking-tight ${theme.textPrimary}`}>CampfireCred</span>
+          <span className={`font-display text-lg font-extrabold tracking-tight bg-gradient-to-r from-amber-400 via-orange-400 to-red-500 bg-clip-text text-transparent`}>
+            CampfireCred
+          </span>
         </button>
 
         {user && (
-          <nav className={`hidden lg:flex items-center gap-1 rounded-full p-1 border ${theme.cardBorder} ${theme.pillBg} shadow-inner`}>
+          <nav className={`hidden lg:flex items-center gap-1 rounded-full p-1 border ${theme.cardBorder} ${theme.pillBg} shadow-inner transition-all`}>
             {navTabs.map((t) => (
-              <button key={t.id} onClick={() => setActiveTab(t.id)} className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs transition-all duration-300 ${activeTab === t.id ? theme.pillActive : theme.pillInactive}`}>
+              <button 
+                key={t.id} 
+                onClick={() => setActiveTab(t.id)} 
+                className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs transition-all duration-300 transform hover:scale-105 active:scale-95 ${activeTab === t.id ? theme.pillActive : theme.pillInactive}`}
+              >
                 <Icon name={t.icon} className="h-3.5 w-3.5" />{t.label}
               </button>
             ))}
@@ -142,7 +167,7 @@ function Navbar({ user, onLogout, onOpenProfile, activeTab, setActiveTab, theme,
 
         <div className="flex items-center gap-3 shrink-0">
           {!user ? (
-            <button onClick={onTriggerAuth} className="flex items-center gap-2.5 bg-white hover:bg-slate-100 text-slate-800 text-sm font-medium px-4 py-2 rounded-xl shadow-md border border-slate-300 transition-all hover:scale-105 active:scale-95">
+            <button onClick={onTriggerAuth} className="flex items-center gap-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-sm px-4 py-2 rounded-xl shadow-lg shadow-amber-500/25 transition-all hover:scale-105 active:scale-95">
               <svg className="h-4 w-4" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
                 <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.19v3.15C3.18 21.31 7.23 24 12 24z"/>
@@ -153,15 +178,15 @@ function Navbar({ user, onLogout, onOpenProfile, activeTab, setActiveTab, theme,
             </button>
           ) : (
             <>
-              <button onClick={() => setActiveTab("leaderboard")} className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/40 rounded-full px-3 py-1 transition-transform hover:scale-105">
-                <Icon name="flame" className="h-3.5 w-3.5 text-amber-500 animate-pulse" />
+              <button onClick={() => setActiveTab("leaderboard")} className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/40 rounded-full px-3 py-1 transition-all hover:scale-105 hover:bg-amber-500/20 shadow-sm">
+                <Icon name="flame" className="h-3.5 w-3.5 text-amber-500 animate-bounce" />
                 <span className="font-mono text-xs font-bold text-amber-500">{user.cred}</span>
                 <span className="text-[10px] text-amber-500/80 uppercase">Cred</span>
               </button>
-              <button onClick={onOpenProfile} className="h-8 w-8 rounded-full bg-gradient-to-r from-amber-500 to-indigo-600 text-white flex items-center justify-center text-xs font-semibold shadow-md transition-transform hover:scale-105">
+              <button onClick={onOpenProfile} className="h-9 w-9 rounded-full bg-gradient-to-r from-amber-500 via-orange-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-md transition-transform hover:scale-110 active:scale-95 ring-2 ring-amber-500/50">
                 {user.initials}
               </button>
-              <button onClick={onLogout} className={`p-2 rounded-lg ${theme.textFaint} ${theme.hoverBg} transition-colors`}>
+              <button onClick={onLogout} title="Log out" className={`p-2 rounded-lg ${theme.textFaint} ${theme.hoverBg} transition-all hover:rotate-90`}>
                 <Icon name="log-out" className="h-4 w-4" />
               </button>
             </>
@@ -177,11 +202,14 @@ function Navbar({ user, onLogout, onOpenProfile, activeTab, setActiveTab, theme,
 
 function Modal({ title, onClose, children, theme }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/70 p-0 sm:p-4 backdrop-blur-md animate-fadeIn">
-      <div className={`rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-6 shadow-2xl ${theme.cardBg} border ${theme.cardBorder} transform transition-all`}>
-        <div className="flex items-center justify-between mb-4">
-          <h3 className={`font-display font-bold ${theme.textPrimary}`}>{title}</h3>
-          <button onClick={onClose} className={`p-1 rounded-lg ${theme.textFaint} ${theme.hoverBg}`}><Icon name="x" className="h-4.5 w-4.5" /></button>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/75 p-0 sm:p-4 backdrop-blur-md animate-fadeIn">
+      <div className={`rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md p-6 shadow-2xl ${theme.cardBg} border ${theme.cardBorder} transform transition-all animate-scaleUp`}>
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-amber-500/20">
+          <h3 className={`font-display font-bold text-lg flex items-center gap-2 ${theme.textPrimary}`}>
+            <Icon name="flame" className="h-4 w-4 text-amber-500 animate-pulse" />
+            {title}
+          </h3>
+          <button onClick={onClose} className={`p-1.5 rounded-full ${theme.textFaint} ${theme.hoverBg} transition-transform hover:rotate-90`}><Icon name="x" className="h-4 w-4" /></button>
         </div>
         {children}
       </div>
@@ -218,7 +246,7 @@ function AuthModal({ onClose, onAuthenticate, theme }) {
       email,
       studentId,
       initials,
-      cred: 0, // Brand new users start with 0 creds as requested!
+      cred: 0, // Starts at 0 creds as requested!
       badges: ["Campfire Spark"]
     };
 
@@ -233,8 +261,8 @@ function AuthModal({ onClose, onAuthenticate, theme }) {
     <Modal title="Google Account Sign-In" onClose={onClose} theme={theme}>
       {step === "email" ? (
         <form onSubmit={handleEmailNext} className="space-y-4">
-          <div className="flex items-center justify-center p-4 bg-blue-500/10 rounded-xl border border-blue-500/20 mb-2">
-            <svg className="h-8 w-8 mr-3" viewBox="0 0 24 24">
+          <div className="flex items-center justify-center p-4 bg-gradient-to-r from-blue-500/15 to-amber-500/15 rounded-2xl border border-blue-500/30 mb-2">
+            <svg className="h-8 w-8 mr-3 animate-spin" style={{ animationDuration: '10s' }} viewBox="0 0 24 24">
               <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
               <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.19v3.15C3.18 21.31 7.23 24 12 24z"/>
               <path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.5-.38-2.24s.13-1.52.38-2.24V6.6H1.19C.43 8.13 0 9.87 0 11.7s.43 3.57 1.19 5.1l4.08-2.56z"/>
@@ -242,7 +270,7 @@ function AuthModal({ onClose, onAuthenticate, theme }) {
             </svg>
             <div>
               <div className={`text-sm font-bold ${theme.textPrimary}`}>Google Identity Services</div>
-              <div className={`text-xs ${theme.textFaint}`}>Continue to CampfireCred</div>
+              <div className={`text-xs ${theme.textFaint}`}>Secure Student Authentication</div>
             </div>
           </div>
           <div>
@@ -253,17 +281,17 @@ function AuthModal({ onClose, onAuthenticate, theme }) {
               value={email} 
               onChange={(e) => setEmail(e.target.value)} 
               placeholder="name@scaler.com or gmail.com" 
-              className={`w-full border rounded-xl px-3.5 py-2.5 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none focus:ring-2 focus:ring-amber-500/50`}
+              className={`w-full border rounded-xl px-3.5 py-2.5 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all`}
             />
           </div>
-          <button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl shadow-md transition-all">
-            Next
+          <button type="submit" className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold py-3 rounded-xl shadow-lg shadow-amber-500/20 transition-transform hover:scale-105 active:scale-95">
+            Continue with Google
           </button>
         </form>
       ) : (
-        <form onSubmit={handleFinishSignup} className="space-y-4">
+        <form onSubmit={handleFinishSignup} className="space-y-4 animate-fadeIn">
           <div className={`text-xs ${theme.textMuted} mb-2`}>
-            We noticed <span className={`font-mono font-semibold ${theme.textPrimary}`}>{email}</span> is new. Let's configure your profile card!
+            We noticed <span className={`font-mono font-semibold ${theme.textPrimary}`}>{email}</span> is brand new. Let's setup your student card!
           </div>
           <div>
             <label className={`block text-xs font-medium mb-1.5 ${theme.textSecondary}`}>Full Name</label>
@@ -272,14 +300,19 @@ function AuthModal({ onClose, onAuthenticate, theme }) {
               required
               value={name} 
               onChange={(e) => setName(e.target.value)} 
-              className={`w-full border rounded-xl px-3.5 py-2.5 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none`}
+              className={`w-full border rounded-xl px-3.5 py-2.5 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none focus:ring-2 focus:ring-amber-500/50`}
             />
           </div>
-          <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl">
-            <div className="text-[11px] text-amber-500 font-bold uppercase">Fresh Account</div>
-            <div className={`text-xs mt-0.5 ${theme.textSecondary}`}>Your starting balance is 0 Creds. Answer questions or participate in sessions to earn your rank!</div>
+          <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center gap-3">
+            <div className="h-8 w-8 rounded-full bg-amber-500/20 flex items-center justify-center shrink-0">
+              <Icon name="sparkles" className="h-4 w-4 text-amber-500 animate-spin" style={{ animationDuration: '4s' }} />
+            </div>
+            <div>
+              <div className="text-[11px] text-amber-500 font-bold uppercase">Fresh Account Bonus</div>
+              <div className={`text-xs mt-0.5 ${theme.textSecondary}`}>Starts with 0 Creds. Answer community questions to earn rank!</div>
+            </div>
           </div>
-          <button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl shadow-md transition-all">
+          <button type="submit" className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold py-3 rounded-xl shadow-lg shadow-amber-500/25 transition-transform hover:scale-105 active:scale-95">
             Create Profile & Enter Hub
           </button>
         </form>
@@ -291,22 +324,31 @@ function AuthModal({ onClose, onAuthenticate, theme }) {
 function ProfileModal({ user, onClose, theme }) {
   return (
     <Modal title="Student Profile" onClose={onClose} theme={theme}>
-      <div className="flex items-center gap-3">
-        <div className="h-14 w-14 rounded-full bg-gradient-to-tr from-amber-500 to-indigo-600 text-white flex items-center justify-center text-lg font-bold shadow-md">{user.initials}</div>
+      <div className="flex items-center gap-4">
+        <div className="relative">
+          <div className="absolute inset-0 rounded-full bg-amber-500/30 animate-ping"></div>
+          <div className="h-14 w-14 rounded-full bg-gradient-to-tr from-amber-500 via-orange-500 to-indigo-600 text-white flex items-center justify-center text-lg font-bold shadow-lg relative z-10">{user.initials}</div>
+        </div>
         <div>
-          <div className={`font-display font-bold ${theme.textPrimary}`}>{user.name}</div>
+          <div className={`font-display font-bold text-base ${theme.textPrimary}`}>{user.name}</div>
           <div className={`text-xs ${theme.textFaint}`}>{user.email}</div>
-          <div className={`text-xs mt-0.5 font-mono text-amber-500`}>ID: {user.studentId}</div>
+          <div className={`text-xs mt-1 font-mono text-amber-500 font-semibold bg-amber-500/10 px-2 py-0.5 rounded-full inline-block`}>ID: {user.studentId}</div>
         </div>
       </div>
       <div className="grid grid-cols-2 gap-3 mt-5">
-        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-center">
-          <div className="font-mono text-2xl font-bold text-amber-500">{user.cred}</div>
-          <div className="text-[10px] text-amber-500/80 uppercase font-bold mt-0.5">Total Cred</div>
+        <div className="bg-gradient-to-br from-amber-500/15 to-orange-500/15 border border-amber-500/40 rounded-2xl p-3.5 text-center transform hover:scale-105 transition-transform">
+          <div className="font-mono text-2xl font-bold text-amber-500 flex items-center justify-center gap-1">
+            <Icon name="flame" className="h-5 w-5 animate-pulse" />
+            {user.cred}
+          </div>
+          <div className="text-[10px] text-amber-500/90 uppercase font-bold mt-1 tracking-wider">Total Cred Points</div>
         </div>
-        <div className={`rounded-xl p-3 text-center border ${theme.pillBg} ${theme.cardBorder}`}>
-          <div className={`font-mono text-2xl font-bold ${theme.textPrimary}`}>{user.badges.length}</div>
-          <div className={`text-[10px] uppercase font-bold mt-0.5 ${theme.textMuted}`}>Badges</div>
+        <div className={`rounded-2xl p-3.5 text-center border ${theme.pillBg} ${theme.cardBorder} transform hover:scale-105 transition-transform`}>
+          <div className={`font-mono text-2xl font-bold ${theme.textPrimary} flex items-center justify-center gap-1`}>
+            <Icon name="award" className="h-5 w-5 text-indigo-400 animate-bounce" />
+            {user.badges.length}
+          </div>
+          <div className={`text-[10px] uppercase font-bold mt-1 tracking-wider ${theme.textMuted}`}>Earned Badges</div>
         </div>
       </div>
     </Modal>
@@ -316,24 +358,25 @@ function ProfileModal({ user, onClose, theme }) {
 function Hero({ theme, onTriggerAuth, goHome }) {
   return (
     <div className="relative overflow-hidden min-h-[calc(100vh-4rem)] flex flex-col justify-center">
-      <div className="relative max-w-5xl mx-auto px-4 pt-12 pb-16 text-center z-10">
-        <button onClick={goHome} className="inline-block group mb-6 focus:outline-none transition-transform hover:scale-105">
-          <div className="inline-flex items-center justify-center p-4 bg-slate-900/80 border border-amber-500/30 rounded-2xl shadow-2xl backdrop-blur-md">
-            <div className="flex items-center gap-3">
-              <Icon name="flame" className="h-8 w-8 text-amber-500 animate-bounce" />
-              <span className="font-display text-2xl font-bold bg-gradient-to-r from-amber-400 to-red-500 bg-clip-text text-transparent">Campfire Cred Hub</span>
+      <div className="relative max-w-5xl mx-auto px-4 pt-12 pb-16 text-center z-10 animate-fadeIn">
+        <button onClick={goHome} className="inline-block group mb-6 focus:outline-none transition-transform hover:scale-110">
+          <div className="inline-flex items-center justify-center p-4 bg-slate-900/90 border border-amber-500/40 rounded-3xl shadow-2xl backdrop-blur-md relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-orange-500/20 to-red-500/10 animate-pulse"></div>
+            <div className="flex items-center gap-3 relative z-10">
+              <Icon name="flame" className="h-9 w-9 text-amber-500 animate-bounce" />
+              <span className="font-display text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-amber-400 via-orange-400 to-red-500 bg-clip-text text-transparent">Campfire Cred Hub</span>
             </div>
           </div>
         </button>
-        <h1 className={`font-display text-4xl sm:text-6xl font-extrabold tracking-tight ${theme.textPrimary}`}>
-          Gather around the <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-red-500">Campfire.</span><br />Solve together, build real Cred.
+        <h1 className={`font-display text-4xl sm:text-6xl font-extrabold tracking-tight ${theme.textPrimary} leading-tight`}>
+          Gather around the <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 animate-pulse">Campfire.</span><br />Solve together, build real Cred.
         </h1>
-        <p className={`mt-5 max-w-2xl mx-auto text-lg ${theme.textMuted}`}>
+        <p className={`mt-5 max-w-2xl mx-auto text-base sm:text-lg ${theme.textMuted}`}>
           The peer learning platform for Scaler School of Technology. Ask technical questions, mentor fellow students, and schedule 1-on-1 sessions.
         </p>
         <div className="mt-8 flex justify-center">
-          <button onClick={onTriggerAuth} className="flex items-center gap-3 bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm px-8 py-3.5 rounded-xl shadow-xl border border-slate-300 transition-all hover:scale-105 active:scale-95">
-            <svg className="h-5 w-5" viewBox="0 0 24 24">
+          <button onClick={onTriggerAuth} className="flex items-center gap-3 bg-white hover:bg-slate-100 text-slate-900 font-bold text-base px-8 py-4 rounded-2xl shadow-2xl border border-slate-300 transition-all hover:scale-105 active:scale-95 group">
+            <svg className="h-5 w-5 transition-transform group-hover:rotate-12" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
               <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.19v3.15C3.18 21.31 7.23 24 12 24z"/>
               <path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.5-.38-2.24s.13-1.52.38-2.24V6.6H1.19C.43 8.13 0 9.87 0 11.7s.43 3.57 1.19 5.1l4.08-2.56z"/>
@@ -371,58 +414,67 @@ function QAFeed({ questions, setQuestions, user, setUser, onCredAwarded, upvoted
     <div className="space-y-4 max-w-4xl mx-auto relative z-10 animate-fadeIn">
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Icon name="search" className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${theme.textFaint}`} />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search technical discussions..." className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm focus:outline-none shadow-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary}`} />
+          <Icon name="search" className={`h-4 w-4 absolute left-3.5 top-1/2 -translate-y-1/2 ${theme.textFaint}`} />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search technical discussions..." className={`w-full pl-10 pr-3.5 py-3 rounded-2xl border text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/50 shadow-sm transition-all ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary}`} />
         </div>
-        <button onClick={() => setShowAsk(true)} className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold text-sm px-5 py-2.5 rounded-xl shadow-lg transition-transform hover:scale-105 active:scale-95">
-          <Icon name="plus" className="h-4 w-4" /> Ask Question
+        <button onClick={() => setShowAsk(true)} className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold text-sm px-6 py-3 rounded-2xl shadow-lg shadow-amber-500/25 transition-all hover:scale-105 active:scale-95 shrink-0">
+          <Icon name="plus" className="h-4 w-4 animate-bounce" /> Ask Question
         </button>
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 pt-1">
         {TAGS.map((tag) => (
-          <button key={tag} onClick={() => toggleTag(tag)} className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${activeTags.includes(tag) ? "bg-amber-500 border-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20" : `${theme.cardBg} ${theme.inputBorder} ${theme.textSecondary} hover:border-amber-500/50`}`}>
+          <button key={tag} onClick={() => toggleTag(tag)} className={`text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-all transform hover:scale-105 active:scale-95 ${activeTags.includes(tag) ? "bg-amber-500 border-amber-400 text-slate-950 shadow-lg shadow-amber-500/30 scale-105" : `${theme.cardBg} ${theme.inputBorder} ${theme.textSecondary} hover:border-amber-500/60`}`}>
             #{tag}
           </button>
         ))}
       </div>
-      <div className="space-y-3">
-        {filtered.map((q) => (
-          <div key={q.id} className={`rounded-2xl border p-5 transition-all hover:shadow-xl ${theme.cardBg} ${theme.cardBorder}`}>
+      <div className="space-y-3.5 pt-2">
+        {filtered.map((q, idx) => (
+          <div key={q.id} className={`rounded-2xl border p-5 transition-all duration-300 hover:shadow-2xl hover:border-amber-500/50 transform hover:-translate-y-1 ${theme.cardBg} ${theme.cardBorder} animate-fadeIn`} style={{ animationDelay: `${idx * 0.05}s` }}>
             <div className="flex items-start gap-3.5">
-              <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-amber-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-md">{q.initials}</div>
+              <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-amber-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-md shrink-0">{q.initials}</div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`text-sm font-semibold ${theme.textPrimary}`}>{q.author}</span>
+                  <span className={`text-sm font-bold ${theme.textPrimary}`}>{q.author}</span>
                   <span className={`text-xs ${theme.textFaint}`}>{q.time}</span>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${theme.tagBg}`}>#{q.tag}</span>
-                  {q.solved && <span className="text-xs font-medium bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-2 py-0.5 rounded-full">Solved</span>}
+                  <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${theme.tagBg}`}>#{q.tag}</span>
+                  {q.solved && <span className="text-xs font-bold bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 px-2.5 py-0.5 rounded-full animate-pulse">✓ Solved</span>}
                 </div>
-                <h3 className={`font-display text-base font-bold mt-1.5 ${theme.textPrimary}`}>{q.title}</h3>
-                <p className={`text-sm mt-1 ${theme.textMuted}`}>{q.desc}</p>
+                <h3 className={`font-display text-base font-bold mt-2 ${theme.textPrimary} hover:text-amber-500 transition-colors`}>{q.title}</h3>
+                <p className={`text-sm mt-1.5 leading-relaxed ${theme.textMuted}`}>{q.desc}</p>
               </div>
             </div>
             <div className={`flex items-center justify-between mt-4 pt-3.5 border-t ${theme.divider}`}>
-              <button onClick={() => toggleUpvote(q.id)} className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${upvoted.has(q.id) ? "bg-amber-500/10 border-amber-500/50 text-amber-500" : `${theme.inputBorder} ${theme.textMuted} ${theme.hoverBg}`}`}>
+              <button onClick={() => toggleUpvote(q.id)} className={`flex items-center gap-1.5 text-xs font-bold px-3.5 py-2 rounded-xl border transition-all transform hover:scale-105 active:scale-95 ${upvoted.has(q.id) ? "bg-amber-500/20 border-amber-500/60 text-amber-400 shadow-md shadow-amber-500/10" : `${theme.inputBorder} ${theme.textMuted} ${theme.hoverBg}`}`}>
                 <Icon name="thumbs-up" className="h-3.5 w-3.5" /> {q.upvotes} Upvotes
               </button>
               {!q.solved ? (
-                <button onClick={() => solveQuestion(q.id)} className="flex items-center gap-1.5 text-xs font-bold bg-amber-400 hover:bg-amber-500 text-slate-950 px-3.5 py-1.5 rounded-lg shadow-md transition-transform hover:scale-105">
-                  <Icon name="zap" className="h-3.5 w-3.5" /> Answer & Earn +50 Cred
+                <button onClick={() => solveQuestion(q.id)} className="flex items-center gap-1.5 text-xs font-bold bg-gradient-to-r from-amber-400 to-orange-400 hover:from-amber-300 hover:to-orange-300 text-slate-950 px-4 py-2 rounded-xl shadow-lg shadow-amber-500/20 transition-all hover:scale-105 active:scale-95">
+                  <Icon name="zap" className="h-3.5 w-3.5 animate-bounce" /> Answer & Earn +50 Cred
                 </button>
-              ) : <span className={`text-xs italic ${theme.textFaint}`}>Verified Solution</span>}
+              ) : <span className={`text-xs font-medium italic ${theme.textFaint} flex items-center gap-1`}><Icon name="award" className="h-3.5 w-3.5 text-amber-500" /> Verified Solution</span>}
             </div>
           </div>
         ))}
       </div>
       {showAsk && (
         <Modal title="Ask the Community" onClose={() => setShowAsk(false)} theme={theme}>
-          <div className="space-y-3.5">
-            <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Title..." className={`w-full border rounded-xl px-3 py-2 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none`} />
-            <select value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value })} className={`w-full border rounded-xl px-3 py-2 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none`}>
-              {TAGS.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-            <textarea value={form.desc} onChange={(e) => setForm({ ...form, desc: e.target.value })} rows={4} placeholder="Description..." className={`w-full border rounded-xl px-3 py-2 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none`} />
-            <button onClick={() => { if (!form.title) return; setQuestions([{ id: Date.now(), author: user.name, initials: user.initials, time: "just now", tag: form.tag, title: form.title, desc: form.desc, upvotes: 0, solved: false }, ...questions]); setShowAsk(false); }} className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl shadow-md transition-all">Publish Question</button>
+          <div className="space-y-4">
+            <div>
+              <label className={`block text-xs font-medium mb-1.5 ${theme.textSecondary}`}>Question Title</label>
+              <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="e.g. Why does my useEffect run twice?" className={`w-full border rounded-xl px-3.5 py-2.5 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none focus:ring-2 focus:ring-amber-500/50`} />
+            </div>
+            <div>
+              <label className={`block text-xs font-medium mb-1.5 ${theme.textSecondary}`}>Category Tag</label>
+              <select value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value })} className={`w-full border rounded-xl px-3.5 py-2.5 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none`}>
+                {TAGS.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={`block text-xs font-medium mb-1.5 ${theme.textSecondary}`}>Detailed Description</label>
+              <textarea value={form.desc} onChange={(e) => setForm({ ...form, desc: e.target.value })} rows={4} placeholder="Describe what you tried..." className={`w-full border rounded-xl px-3.5 py-2.5 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none`} />
+            </div>
+            <button onClick={() => { if (!form.title) return; setQuestions([{ id: Date.now(), author: user.name, initials: user.initials, time: "just now", tag: form.tag, title: form.title, desc: form.desc, upvotes: 0, solved: false }, ...questions]); setShowAsk(false); }} className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-bold py-3 rounded-xl shadow-lg shadow-amber-500/25 transition-transform hover:scale-105 active:scale-95">Publish Question</button>
           </div>
         </Modal>
       )}
@@ -438,24 +490,29 @@ function SchedulePage({ type, theme }) {
   return (
     <div className="space-y-6 max-w-4xl mx-auto relative z-10 animate-fadeIn">
       <div>
-        <h2 className={`font-display text-xl font-bold ${theme.textPrimary}`}>{type === "ta" ? "TA Meeting Scheduling" : "Peer-to-Peer Scheduling"}</h2>
-        <p className={`text-sm mt-1 ${theme.textMuted}`}>Book office hours and mentorship sessions.</p>
+        <h2 className={`font-display text-2xl font-extrabold ${theme.textPrimary} flex items-center gap-2.5`}>
+          <Icon name={type === "ta" ? "user-check" : "users"} className="h-6 w-6 text-amber-500 animate-bounce" />
+          {type === "ta" ? "TA Meeting Scheduling" : "Peer-to-Peer Sessions"}
+        </h2>
+        <p className={`text-sm mt-1 ${theme.textMuted}`}>Book office hours and direct mentorship sessions with peers and mentors.</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
-        {list.map((p) => (
-          <div key={p.id} className={`rounded-2xl border p-5 ${theme.cardBg} ${theme.cardBorder} flex flex-col justify-between shadow-sm transition-all hover:shadow-xl`}>
-            <div className="flex items-center gap-3">
-              <div className="h-11 w-11 rounded-full bg-gradient-to-tr from-amber-500 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md">{p.initials}</div>
-              <div>
-                <div className={`text-base font-bold ${theme.textPrimary}`}>{p.name}</div>
-                <div className="flex gap-1 mt-1 flex-wrap">{p.expertise.map((e) => <span key={e} className={`text-[10px] px-2 py-0.5 rounded-full ${theme.tagBg}`}>#{e}</span>)}</div>
+        {list.map((p, idx) => (
+          <div key={p.id} className={`rounded-2xl border p-5 ${theme.cardBg} ${theme.cardBorder} flex flex-col justify-between shadow-md transition-all duration-300 hover:shadow-2xl hover:border-amber-500/50 transform hover:-translate-y-1 animate-fadeIn`} style={{ animationDelay: `${idx * 0.1}s` }}>
+            <div>
+              <div className="flex items-center gap-3.5">
+                <div className="h-12 w-12 rounded-full bg-gradient-to-tr from-amber-500 via-orange-500 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md shrink-0">{p.initials}</div>
+                <div>
+                  <div className={`text-base font-bold ${theme.textPrimary}`}>{p.name}</div>
+                  <div className="flex gap-1.5 mt-1.5 flex-wrap">{p.expertise.map((e) => <span key={e} className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full ${theme.tagBg}`}>#{e}</span>)}</div>
+                </div>
               </div>
             </div>
-            <div className="mt-5 pt-4 border-t border-slate-800/40 flex gap-2">
-              <select value={selected[p.id] || p.slots[0]} onChange={(e) => setSelected({ ...selected, [p.id]: e.target.value })} className={`w-full border rounded-xl px-3 py-2 text-xs ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none`}>
+            <div className="mt-6 pt-4 border-t border-slate-800/40 flex items-center gap-2.5">
+              <select value={selected[p.id] || p.slots[0]} onChange={(e) => setSelected({ ...selected, [p.id]: e.target.value })} className={`w-full border rounded-xl px-3.5 py-2.5 text-xs font-medium ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none shadow-sm`}>
                 {p.slots.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
-              <button onClick={() => setConfirmed({ person: p, slot: selected[p.id] || p.slots[0], link: genLink() })} className="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-4 py-2 rounded-xl shrink-0 shadow-md transition-transform hover:scale-105">Request</button>
+              <button onClick={() => setConfirmed({ person: p, slot: selected[p.id] || p.slots[0], link: genLink() })} className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 text-xs font-bold px-5 py-2.5 rounded-xl shrink-0 shadow-lg shadow-amber-500/20 transition-transform hover:scale-105 active:scale-95">Request</button>
             </div>
           </div>
         ))}
@@ -463,8 +520,14 @@ function SchedulePage({ type, theme }) {
       {confirmed && (
         <Modal title="Session Confirmed!" onClose={() => setConfirmed(null)} theme={theme}>
           <div className="space-y-4 text-sm">
-            <div className="text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3">Confirmed with {confirmed.person.name} at {confirmed.slot}</div>
-            <div className={`p-3 border rounded-xl font-mono text-xs ${theme.inputBorder} ${theme.textSecondary}`}>Room link: {confirmed.link}</div>
+            <div className="text-emerald-400 bg-emerald-500/15 border border-emerald-500/40 rounded-2xl p-4 font-medium flex items-center gap-2.5">
+              <Icon name="check-circle" className="h-5 w-5 text-emerald-400 shrink-0" />
+              <span>Successfully scheduled with <b>{confirmed.person.name}</b> at <b>{confirmed.slot}</b>!</span>
+            </div>
+            <div className={`p-4 border rounded-2xl font-mono text-xs ${theme.inputBorder} ${theme.textSecondary} bg-slate-900/40 flex items-center justify-between`}>
+              <span className="truncate mr-2"><b>Room:</b> {confirmed.link}</span>
+              <button onClick={() => alert("Copied meeting link!")} className="text-amber-500 hover:text-amber-400 font-bold uppercase shrink-0">Copy</button>
+            </div>
           </div>
         </Modal>
       )}
@@ -476,15 +539,37 @@ function LeaderboardPage({ user, theme }) {
   const merged = [...leaderboardBase, { id: "me", name: user.name, initials: user.initials, cred: user.cred, badges: user.badges }].sort((a, b) => b.cred - a.cred);
   return (
     <div className="space-y-6 max-w-4xl mx-auto relative z-10 animate-fadeIn">
-      <div className={`rounded-2xl border ${theme.cardBg} ${theme.cardBorder} p-6 shadow-xl`}>
-        <h3 className={`font-display text-lg font-bold mb-4 ${theme.textPrimary}`}>Campfire Leaderboard</h3>
-        <div className="space-y-2">
+      <div className={`rounded-3xl border ${theme.cardBg} ${theme.cardBorder} p-6 sm:p-8 shadow-2xl`}>
+        <div className="flex items-center justify-between mb-6 pb-4 border-b border-amber-500/20">
+          <div>
+            <h3 className={`font-display text-xl font-extrabold ${theme.textPrimary} flex items-center gap-2.5`}>
+              <Icon name="trophy" className="h-6 w-6 text-amber-500 animate-bounce" />
+              Campfire Leaderboard
+            </h3>
+            <p className={`text-xs mt-1 ${theme.textMuted}`}>Top community contributors ranked by Cred points earned.</p>
+          </div>
+        </div>
+        <div className="space-y-3">
           {merged.map((entry, i) => (
-            <div key={entry.id} className={`flex items-center gap-4 p-3.5 rounded-xl transition-all ${entry.id === "me" ? "bg-amber-500/10 border border-amber-500/40 shadow-sm" : "hover:bg-slate-500/5"}`}>
-              <div className="w-6 text-center font-mono font-bold text-sm">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}</div>
-              <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 text-white flex items-center justify-center font-bold shadow-md">{entry.initials}</div>
-              <div className="flex-1"><div className={`text-sm font-bold ${theme.textPrimary}`}>{entry.name} {entry.id === "me" && <span className="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/40 px-2 py-0.5 rounded-full ml-2">YOU</span>}</div></div>
-              <div className="text-right font-mono font-bold text-amber-500">{entry.cred} Creds</div>
+            <div key={entry.id} className={`flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 transform hover:scale-[1.01] ${entry.id === "me" ? "bg-gradient-to-r from-amber-500/20 via-orange-500/15 to-transparent border border-amber-500/50 shadow-lg shadow-amber-500/10" : "hover:bg-amber-500/5 border border-transparent"}`}>
+              <div className="w-8 text-center font-mono font-extrabold text-base">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}</div>
+              <div className="h-11 w-11 rounded-full bg-gradient-to-tr from-amber-500 via-orange-500 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md shrink-0">{entry.initials}</div>
+              <div className="flex-1 min-w-0">
+                <div className={`text-sm sm:text-base font-bold ${theme.textPrimary} flex items-center gap-2`}>
+                  <span className="truncate">{entry.name}</span>
+                  {entry.id === "me" && <span className="text-[10px] bg-amber-500 text-slate-950 font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider animate-pulse">YOU</span>}
+                </div>
+                <div className="flex gap-1.5 mt-1">
+                  {entry.badges.map(b => <span key={b} className="text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full">{b}</span>)}
+                </div>
+              </div>
+              <div className="text-right shrink-0">
+                <div className="font-mono font-extrabold text-base sm:text-lg text-amber-500 flex items-center justify-end gap-1">
+                  <Icon name="flame" className="h-4 w-4 animate-pulse" />
+                  {entry.cred}
+                </div>
+                <div className="text-[10px] text-amber-500/70 font-bold uppercase tracking-wider">Creds</div>
+              </div>
             </div>
           ))}
         </div>
@@ -538,7 +623,7 @@ function CampfireCredApp() {
         <Hero theme={theme} dark={dark} onTriggerAuth={() => setShowAuth(true)} goHome={() => setActiveTab("feed")} />
       ) : (
         <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 relative z-10">
-          {activeTab === "feed" && <QAFeed questions={questions} setQuestions={setQuestions} user={user} setUser={setUser} onCredAwarded={() => { setToast("+50 Cred Points Added!"); setTimeout(() => setToast(null), 2000); }} upvoted={upvoted} setUpvoted={setUpvoted} theme={theme} />}
+          {activeTab === "feed" && <QAFeed questions={questions} setQuestions={setQuestions} user={user} setUser={setUser} onCredAwarded={() => { setToast("+50 Cred Points Added!"); setTimeout(() => setToast(null), 2500); }} upvoted={upvoted} setUpvoted={setUpvoted} theme={theme} />}
           {activeTab === "ta_hours" && <SchedulePage type="ta" theme={theme} />}
           {activeTab === "peer_hours" && <SchedulePage type="peer" theme={theme} />}
           {activeTab === "leaderboard" && <LeaderboardPage user={user} theme={theme} />}
@@ -546,7 +631,12 @@ function CampfireCredApp() {
       )}
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} onAuthenticate={handleAuthenticate} theme={theme} />}
       {showProfile && user && <ProfileModal user={user} onClose={() => setShowProfile(false)} theme={theme} />}
-      {toast && <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-amber-500 text-slate-950 text-sm font-bold px-5 py-2.5 rounded-full shadow-2xl animate-bounce">{toast}</div>}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 text-slate-950 text-sm font-extrabold px-6 py-3 rounded-2xl shadow-2xl animate-bounce flex items-center gap-2 border border-amber-300">
+          <Icon name="sparkles" className="h-4 w-4" />
+          {toast}
+        </div>
+      )}
     </div>
   );
 }
