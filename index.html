@@ -54,7 +54,6 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    // Helper component to render Lucide Icons dynamically
     const Icon = ({ name, className = "h-4 w-4", strokeWidth = 2 }) => {
       const ref = useRef(null);
       useEffect(() => {
@@ -125,15 +124,6 @@
       return `meet.campfirecred.com/${s.slice(0, 4)}-${s.slice(4, 9)}`;
     };
 
-    const parseSstEmail = (email) => {
-      const match = email.trim().match(/^([a-z]+)\.(\d{2})bcs(\d+)@sst\.scaler\.com$/i);
-      if (!match) return null;
-      const [, rawName, year, roll] = match;
-      const name = rawName.charAt(0).toUpperCase() + rawName.slice(1).toLowerCase();
-      const initials = name.slice(0, 2).toUpperCase();
-      return { name, initials, studentId: `${year}BCS${roll}`.toUpperCase() };
-    };
-
     const getTheme = (dark) => ({
       dark,
       appBg: dark ? "bg-slate-950" : "bg-slate-50",
@@ -160,18 +150,18 @@
     // ============================================================
     // Navbar
     // ============================================================
-    function Navbar({ user, onLogin, onLogout, onOpenProfile, activeTab, setActiveTab, theme, dark, setDark, emailRef, loginPulse }) {
-      const [email, setEmail] = useState("");
-      const [error, setError] = useState("");
-
-      const handleLogin = () => {
-        const parsed = parseSstEmail(email);
-        if (!parsed) {
-          setError("Format: name.YYbcsRollNo@sst.scaler.com");
-          return;
-        }
-        onLogin({ ...parsed, email: email.trim().toLowerCase(), cred: 320, badges: ["Newcomer"] });
-        setError("");
+    function Navbar({ user, onLogin, onLogout, onOpenProfile, activeTab, setActiveTab, theme, dark, setDark }) {
+      const handleGoogleSignIn = () => {
+        // Direct redirect to Google OAuth Endpoint
+        const googleAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth?" + new URLSearchParams({
+          client_id: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
+          redirect_uri: window.location.href,
+          response_type: "token",
+          scope: "email profile",
+          hd: "sst.scaler.com"
+        }).toString();
+        
+        window.location.href = googleAuthUrl;
       };
 
       const navTabs = [
@@ -184,7 +174,7 @@
         <header className={`sticky top-0 z-40 backdrop-blur ${theme.navBg} border-b ${theme.navBorder}`}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 shrink-0">
-              <div className="h-9 w-9 rounded-lg bg-indigo-600 flex items-center justify-center">
+              <div className="h-9 w-9 rounded-lg bg-indigo-600 flex items-center justify-center transition-transform hover:scale-105 active:scale-95 duration-200">
                 <Icon name="flame" className="h-5 w-5 text-white" strokeWidth={2.5} />
               </div>
               <span className={`font-display text-lg font-bold tracking-tight ${theme.textPrimary}`}>CampfireCred</span>
@@ -196,7 +186,7 @@
                   <button
                     key={t.id}
                     onClick={() => setActiveTab(t.id)}
-                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${
                       activeTab === t.id ? theme.pillActive : theme.pillInactive
                     }`}
                   >
@@ -206,28 +196,20 @@
               </nav>
             )}
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-3 shrink-0">
               {!user ? (
-                <>
-                  <div className="hidden sm:flex flex-col">
-                    <input
-                      ref={emailRef}
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-                      placeholder="arya.26bcs10491@sst.scaler.com"
-                      className={`border rounded-lg px-3 py-1.5 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} ${loginPulse ? "ring-2 ring-indigo-400" : ""}`}
-                    />
-                    {error && <span className="text-xs text-rose-500 mt-1">{error}</span>}
-                  </div>
-                  <button
-                    onClick={handleLogin}
-                    className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-                  >
-                    <svg className="h-4 w-4" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.6 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4c-7.7 0-14.3 4.4-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.3 0 10.2-2 13.9-5.4l-6.4-5.4C29.4 34.9 26.8 36 24 36c-5.4 0-9.9-3.4-11.5-8.2l-6.6 5.1C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1 3.1-3.2 5.6-6 7.2l6.4 5.4C39.5 37.4 44 31.3 44 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
-                    Sign in
-                  </button>
-                </>
+                <button
+                  onClick={handleGoogleSignIn}
+                  className="flex items-center gap-2 bg.slate-900 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
+                >
+                  <svg className="h-4 w-4" viewBox="0 0 48 48">
+                    <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.6 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/>
+                    <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4c-7.7 0-14.3 4.4-17.7 10.7z"/>
+                    <path fill="#4CAF50" d="M24 44c5.3 0 10.2-2 13.9-5.4l-6.4-5.4C29.4 34.9 26.8 36 24 36c-5.4 0-9.9-3.4-11.5-8.2l-6.6 5.1C9.5 39.6 16.2 44 24 44z"/>
+                    <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1 3.1-3.2 5.6-6 7.2l6.4 5.4C39.5 37.4 44 31.3 44 24c0-1.2-.1-2.4-.4-3.5z"/>
+                  </svg>
+                  Sign in
+                </button>
               ) : (
                 <>
                   <div className="hidden sm:flex items-center gap-1.5 bg-amber-400/10 border border-amber-400/40 rounded-full px-3 py-1">
@@ -236,7 +218,7 @@
                     <span className="text-xs text-amber-500/80">Cred</span>
                   </div>
                   <button onClick={onOpenProfile} className="flex items-center gap-2 group">
-                    <div className="h-9 w-9 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-semibold group-hover:ring-2 group-hover:ring-indigo-300 transition-all">
+                    <div className="h-9 w-9 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm font-semibold group-hover:ring-2 group-hover:ring-indigo-300 transition-all duration-200">
                       {user.initials}
                     </div>
                     <div className="hidden lg:flex flex-col items-start leading-tight">
@@ -244,7 +226,7 @@
                       <span className={`text-xs ${theme.textFaint}`}>{user.studentId}</span>
                     </div>
                   </button>
-                  <button onClick={onLogout} className={`p-2 rounded-lg ${theme.textFaint} ${theme.hoverBg}`}>
+                  <button onClick={onLogout} className={`p-2 rounded-lg ${theme.textFaint} ${theme.hoverBg} transition-colors duration-200`}>
                     <Icon name="log-out" className="h-4 w-4" />
                   </button>
                 </>
@@ -253,7 +235,7 @@
               <button
                 onClick={() => setDark(!dark)}
                 aria-label="Toggle dark mode"
-                className={`p-2 rounded-lg border transition-colors ${theme.inputBorder} ${theme.hoverBg}`}
+                className={`p-2 rounded-lg border transition-all duration-200 hover:scale-105 active:scale-95 ${theme.inputBorder} ${theme.hoverBg}`}
               >
                 {dark ? <Icon name="sun" className="h-4 w-4 text-amber-400" /> : <Icon name="moon" className="h-4 w-4 text-slate-600" />}
               </button>
@@ -266,7 +248,7 @@
                 <button
                   key={t.id}
                   onClick={() => setActiveTab(t.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap ${
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all duration-200 ${
                     activeTab === t.id ? "bg-indigo-600 text-white" : theme.chipBg
                   }`}
                 >
@@ -282,7 +264,7 @@
     // ============================================================
     // Hero
     // ============================================================
-    function Hero({ theme, dark, emailRef, setLoginPulse }) {
+    function Hero({ theme, dark }) {
       const [counts, setCounts] = useState({ questions: 0, cred: 0, mentors: 0 });
       const [previewTab, setPreviewTab] = useState("ask");
       const started = useRef(false);
@@ -306,10 +288,16 @@
         requestAnimationFrame(tick);
       }, []);
 
-      const focusLogin = () => {
-        emailRef.current?.focus();
-        setLoginPulse(true);
-        setTimeout(() => setLoginPulse(false), 1200);
+      const handleGoogleSignIn = () => {
+        const googleAuthUrl = "https://accounts.google.com/o/oauth2/v2/auth?" + new URLSearchParams({
+          client_id: "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
+          redirect_uri: window.location.href,
+          response_type: "token",
+          scope: "email profile",
+          hd: "sst.scaler.com"
+        }).toString();
+        
+        window.location.href = googleAuthUrl;
       };
 
       const previews = {
@@ -407,15 +395,18 @@
 
             <div className="mt-8 flex items-center justify-center gap-3">
               <button
-                onClick={focusLogin}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-6 py-3 rounded-xl transition-colors shadow-lg shadow-indigo-600/20"
+                onClick={handleGoogleSignIn}
+                className="flex items-center gap-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-6 py-3 rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg shadow-indigo-600/20"
               >
-                Sign in with your SST email
+                <svg className="h-4 w-4" viewBox="0 0 48 48">
+                  <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.6 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/>
+                  <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4c-7.7 0-14.3 4.4-17.7 10.7z"/>
+                  <path fill="#4CAF50" d="M24 44c5.3 0 10.2-2 13.9-5.4l-6.4-5.4C29.4 34.9 26.8 36 24 36c-5.4 0-9.9-3.4-11.5-8.2l-6.6 5.1C9.5 39.6 16.2 44 24 44z"/>
+                  <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1 3.1-3.2 5.6-6 7.2l6.4 5.4C39.5 37.4 44 31.3 44 24c0-1.2-.1-2.4-.4-3.5z"/>
+                </svg>
+                Sign in with Google
               </button>
             </div>
-            <p className={`text-xs mt-3 ${theme.textFaint}`}>
-              Format: <span className="font-mono">name.YYbcsRollNo@sst.scaler.com</span>
-            </p>
 
             <div className="mt-14 grid grid-cols-3 gap-4 max-w-xl mx-auto">
               <div>
@@ -515,12 +506,12 @@
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search questions..."
-                className={`w-full pl-9 pr-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary}`}
+                className={`w-full pl-9 pr-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary}`}
               />
             </div>
             <button
               onClick={() => setShowAsk(true)}
-              className="flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors shrink-0"
+              className="flex items-center justify-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shrink-0"
             >
               <Icon name="plus" className="h-4 w-4" /> Ask a Question
             </button>
@@ -531,7 +522,7 @@
               <button
                 key={tag}
                 onClick={() => toggleTag(tag)}
-                className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
+                className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all duration-200 hover:scale-105 active:scale-95 ${
                   activeTags.includes(tag)
                     ? "bg-indigo-600 border-indigo-600 text-white"
                     : `${theme.cardBg} ${theme.inputBorder} ${theme.textSecondary} hover:border-indigo-300`
@@ -549,7 +540,7 @@
               </div>
             )}
             {filtered.map((q) => (
-              <div key={q.id} className={`rounded-xl border p-5 transition-all hover:shadow-sm ${theme.cardBg} ${theme.cardBorder} ${theme.cardHover}`}>
+              <div key={q.id} className={`rounded-xl border p-5 transition-all duration-200 hover:shadow-md ${theme.cardBg} ${theme.cardBorder} ${theme.cardHover}`}>
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-3 min-w-0">
                     <div className="h-9 w-9 rounded-full bg-slate-700 text-white flex items-center justify-center text-xs font-semibold shrink-0">
@@ -575,7 +566,7 @@
                 <div className={`flex items-center justify-between mt-4 pt-4 border-t ${theme.divider}`}>
                   <button
                     onClick={() => toggleUpvote(q.id)}
-                    className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg border transition-colors ${
+                    className={`flex items-center gap-1.5 text-sm font-medium px-3 py-1.5 rounded-lg border transition-all duration-200 hover:scale-105 active:scale-95 ${
                       upvoted.has(q.id) ? "bg-indigo-500/10 border-indigo-500/40 text-indigo-500" : `${theme.inputBorder} ${theme.textMuted} hover:border-slate-400`
                     }`}
                   >
@@ -585,7 +576,7 @@
                   {!q.solved ? (
                     <button
                       onClick={() => solveQuestion(q.id)}
-                      className="flex items-center gap-1.5 text-sm font-medium bg-amber-400 hover:bg-amber-500 text-slate-900 px-3.5 py-1.5 rounded-lg transition-colors"
+                      className="flex items-center gap-1.5 text-sm font-medium bg-amber-400 hover:bg-amber-500 text-slate-900 px-3.5 py-1.5 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-sm"
                     >
                       <Icon name="zap" className="h-3.5 w-3.5" /> Solve & Earn +50 Cred
                     </button>
@@ -631,7 +622,7 @@
                 </div>
                 <button
                   onClick={submitQuestion}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2.5 rounded-lg transition-colors"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2.5 rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-95"
                 >
                   Post Question
                 </button>
@@ -661,7 +652,7 @@
               return (
                 <div
                   key={entry.id}
-                  className={`flex items-center gap-3 px-2.5 py-2 rounded-lg ${isMe ? "bg-indigo-500/10 border border-indigo-500/30" : ""}`}
+                  className={`flex items-center gap-3 px-2.5 py-2 rounded-lg transition-colors duration-200 ${isMe ? "bg-indigo-500/10 border border-indigo-500/30" : ""}`}
                 >
                   <span className={`w-5 text-sm font-mono font-semibold ${i < 3 ? "text-amber-500" : theme.textFaint}`}>{i + 1}</span>
                   <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-semibold text-white shrink-0 ${isMe ? "bg-indigo-600" : "bg-slate-600"}`}>
@@ -720,13 +711,13 @@
           <div className={`inline-flex rounded-full p-1 ${theme.pillBg}`}>
             <button
               onClick={() => setTab("ta")}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${tab === "ta" ? theme.pillActive : theme.pillInactive}`}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${tab === "ta" ? theme.pillActive : theme.pillInactive}`}
             >
               Book TA Office Hours
             </button>
             <button
               onClick={() => setTab("peer")}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${tab === "peer" ? theme.pillActive : theme.pillInactive}`}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${tab === "peer" ? theme.pillActive : theme.pillInactive}`}
             >
               Peer-to-Peer Session
             </button>
@@ -767,7 +758,7 @@
                   </div>
                   <button
                     onClick={() => requestMeeting(p)}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-3.5 py-2 rounded-lg transition-colors shrink-0"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-3.5 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 shrink-0"
                   >
                     Request
                   </button>
@@ -788,7 +779,7 @@
                 </div>
                 <button
                   onClick={confirmMeeting}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition-colors"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 rounded-lg transition-all duration-200 hover:scale-[1.02] active:scale-95"
                 >
                   Confirm & Generate Link
                 </button>
@@ -808,7 +799,7 @@
                     <div className={`flex-1 flex items-center gap-2 border rounded-lg px-3 py-2 font-mono text-xs truncate ${theme.inputBorder} ${theme.textSecondary}`}>
                       <Icon name="video" className={`h-3.5 w-3.5 shrink-0 ${theme.textFaint}`} /> {confirmed.link}
                     </div>
-                    <button onClick={copyLink} className={`border rounded-lg p-2 ${theme.inputBorder} ${theme.hoverBg}`}>
+                    <button onClick={copyLink} className={`border rounded-lg p-2 transition-all duration-200 hover:scale-105 active:scale-95 ${theme.inputBorder} ${theme.hoverBg}`}>
                       {copied ? <Icon name="check" className="h-4 w-4 text-emerald-500" /> : <Icon name="copy" className={`h-4 w-4 ${theme.textMuted}`} />}
                     </button>
                   </div>
@@ -868,11 +859,11 @@
     // ============================================================
     function Modal({ title, onClose, children, theme }) {
       return (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 p-0 sm:p-4">
-          <div className={`rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-5 shadow-xl ${theme.cardBg}`}>
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-900/50 p-0 sm:p-4 backdrop-blur-sm transition-opacity">
+          <div className={`rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-5 shadow-xl ${theme.cardBg} transform transition-all`}>
             <div className="flex items-center justify-between mb-4">
               <h3 className={`font-display font-semibold ${theme.textPrimary}`}>{title}</h3>
-              <button onClick={onClose} className={`p-1 rounded-lg ${theme.textFaint} ${theme.hoverBg}`}>
+              <button onClick={onClose} className={`p-1 rounded-lg transition-colors ${theme.textFaint} ${theme.hoverBg}`}>
                 <Icon name="x" className="h-4.5 w-4.5" />
               </button>
             </div>
@@ -893,8 +884,6 @@
       const [questions, setQuestions] = useState(initialQuestions);
       const [upvoted, setUpvoted] = useState(new Set());
       const [toast, setToast] = useState(null);
-      const [loginPulse, setLoginPulse] = useState(false);
-      const emailRef = useRef(null);
 
       const theme = getTheme(dark);
 
@@ -915,12 +904,10 @@
             theme={theme}
             dark={dark}
             setDark={setDark}
-            emailRef={emailRef}
-            loginPulse={loginPulse}
           />
 
           {!user ? (
-            <Hero theme={theme} dark={dark} emailRef={emailRef} setLoginPulse={setLoginPulse} />
+            <Hero theme={theme} dark={dark} />
           ) : (
             <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
               {activeTab === "feed" && (
@@ -958,7 +945,7 @@
           {showProfile && user && <ProfileModal user={user} onClose={() => setShowProfile(false)} theme={theme} />}
 
           {toast && (
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-slate-900 text-white text-sm font-medium px-4 py-2.5 rounded-full shadow-lg">
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-slate-900 text-white text-sm font-medium px-4 py-2.5 rounded-full shadow-lg animate-bounce">
               <Icon name="flame" className="h-4 w-4 text-amber-400" /> {toast}
             </div>
           )}
