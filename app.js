@@ -44,7 +44,6 @@ const getTheme = (dark) => ({
   navBorder: dark ? "border-slate-800" : "border-slate-200",
   cardBg: dark ? "bg-slate-900" : "bg-white",
   cardBorder: dark ? "border-slate-800" : "border-slate-200",
-  cardHover: dark ? "hover:border-amber-500/50" : "hover:border-indigo-200",
   pillBg: dark ? "bg-slate-800" : "bg-slate-100",
   pillActive: dark ? "bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20" : "bg-white text-indigo-700 shadow-sm font-semibold",
   pillInactive: dark ? "text-slate-400 hover:text-white" : "text-slate-500 hover:text-slate-800",
@@ -57,7 +56,6 @@ const getTheme = (dark) => ({
   hoverBg: dark ? "hover:bg-slate-800" : "hover:bg-slate-100",
   divider: dark ? "border-slate-800" : "border-slate-100",
   tagBg: dark ? "bg-amber-950/60 text-amber-300 border border-amber-800/40" : "bg-blue-50 text-blue-700",
-  chipBg: dark ? "bg-slate-800 text-slate-400" : "bg-slate-100 text-slate-500",
 });
 
 function Icon({ name, className = "h-4 w-4", strokeWidth = 2 }) {
@@ -85,9 +83,9 @@ function Navbar({ user, onLogin, onLogout, onOpenProfile, activeTab, setActiveTa
 
   const navTabs = [
     { id: "feed", label: "Q&A Feed", icon: "message-square" },
-    { id: "ta_hours", label: "TA Meeting Scheduling", icon: "user-check" },
-    { id: "peer_hours", label: "Peer-to-Peer Scheduling", icon: "users" },
-    { id: "leaderboard", label: "Credits & Leaderboard", icon: "trophy" },
+    { id: "ta_hours", label: "TA Hours", icon: "user-check" },
+    { id: "peer_hours", label: "Peer-to-Peer", icon: "users" },
+    { id: "leaderboard", label: "Leaderboard", icon: "trophy" },
   ];
 
   return (
@@ -113,7 +111,6 @@ function Navbar({ user, onLogin, onLogout, onOpenProfile, activeTab, setActiveTa
         <div className="flex items-center gap-3 shrink-0">
           {!user ? (
             <button onClick={handleGoogleSignIn} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-md border border-slate-700">
-              <svg className="h-4 w-4" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.6 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4c-7.7 0-14.3 4.4-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.3 0 10.2-2 13.9-5.4l-6.4-5.4C29.4 34.9 26.8 36 24 36c-5.4 0-9.9-3.4-11.5-8.2l-6.6 5.1C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1 3.1-3.2 5.6-6 7.2l6.4 5.4C39.5 37.4 44 31.3 44 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
               Sign in with Google
             </button>
           ) : (
@@ -179,17 +176,9 @@ function ProfileModal({ user, onClose, theme }) {
   );
 }
 
-function Hero({ theme, dark, onLogin, goHome }) {
-  const [counts, setCounts] = useState({ questions: 1284, cred: 96500, mentors: 42 });
-
+function Hero({ theme, onLogin, goHome }) {
   return (
     <div className="relative overflow-hidden min-h-[calc(100vh-4rem)] flex flex-col justify-center">
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] fire-glow rounded-full" />
-        {[...Array(10)].map((_, i) => (
-          <span key={i} className="ember" style={{ width: `${4 + (i%3)*2}px`, height: `${4 + (i%3)*2}px`, left: `${10 + i*8}%`, animationDelay: `${i*0.3}s`, animationDuration: `${3.5 + (i%3)}s` }} />
-        ))}
-      </div>
       <div className="relative max-w-5xl mx-auto px-4 pt-12 pb-16 text-center z-10">
         <button onClick={goHome} className="inline-block group mb-6 focus:outline-none">
           <div className="inline-flex items-center justify-center p-4 bg-slate-900/80 border border-amber-500/30 rounded-2xl shadow-2xl backdrop-blur-md">
@@ -207,7 +196,6 @@ function Hero({ theme, dark, onLogin, goHome }) {
         </p>
         <div className="mt-8 flex justify-center">
           <button onClick={() => onLogin({ name: "Arya Ravindra Koshti", email: "arya.26bcs10491@sst.scaler.com", studentId: "26BCS10491", initials: "AK", cred: 450, badges: ["Early Adopter"] })} className="flex items-center gap-3 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold text-sm px-8 py-3.5 rounded-xl shadow-lg shadow-amber-500/25">
-            <svg className="h-5 w-5" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.6 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.5 6.1 29.5 4 24 4c-7.7 0-14.3 4.4-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.3 0 10.2-2 13.9-5.4l-6.4-5.4C29.4 34.9 26.8 36 24 36c-5.4 0-9.9-3.4-11.5-8.2l-6.6 5.1C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1 3.1-3.2 5.6-6 7.2l6.4 5.4C39.5 37.4 44 31.3 44 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
             Sign in with SST Google Account
           </button>
         </div>
