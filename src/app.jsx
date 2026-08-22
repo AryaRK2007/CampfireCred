@@ -937,3 +937,4 @@ export default function CampfireCredApp() {
     </div>
   );
 }
+export default App;
