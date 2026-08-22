@@ -20,7 +20,11 @@
 <body class="bg-slate-950 text-white font-body">
   <div id="root"></div>
 
-  <!-- Pure Babel script tag -->
+  <!-- Load your modular scripts in dependency order -->
+  <script type="text/babel" src="data.js"></script>
+  <script type="text/babel" src="components.js"></script>
+  <script type="text/babel" src="hero.js"></script>
+  <script type="text/babel" src="features.js"></script>
   <script type="text/babel" src="app.js"></script>
 </body>
 </html>
