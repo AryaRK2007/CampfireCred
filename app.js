@@ -40,12 +40,12 @@ const genLink = () => {
 const getTheme = (dark) => ({
   dark,
   appBg: dark ? "bg-slate-950" : "bg-slate-50",
-  navBg: dark ? "bg-slate-900/90" : "bg-white/90",
-  navBorder: dark ? "border-slate-800" : "border-slate-200",
-  cardBg: dark ? "bg-slate-900" : "bg-white",
+  navBg: dark ? "bg-slate-900/80 backdrop-blur-md" : "bg-white/80 backdrop-blur-md",
+  navBorder: dark ? "border-slate-800/80" : "border-slate-200/80",
+  cardBg: dark ? "bg-slate-900/90 backdrop-blur-sm" : "bg-white/90 backdrop-blur-sm",
   cardBorder: dark ? "border-slate-800" : "border-slate-200",
   pillBg: dark ? "bg-slate-800" : "bg-slate-100",
-  pillActive: dark ? "bg-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20" : "bg-white text-indigo-700 shadow-sm font-semibold",
+  pillActive: dark ? "bg-amber-500 text-slate-950 font-bold shadow-lg shadow-amber-500/25 scale-105" : "bg-indigo-600 text-white shadow-sm font-semibold scale-105",
   pillInactive: dark ? "text-slate-400 hover:text-white" : "text-slate-500 hover:text-slate-800",
   inputBg: dark ? "bg-slate-800" : "bg-white",
   inputBorder: dark ? "border-slate-700" : "border-slate-300",
@@ -69,6 +69,49 @@ function Icon({ name, className = "h-4 w-4", strokeWidth = 2 }) {
   return <span ref={ref} className="inline-flex items-center justify-center" />;
 }
 
+// Background floating campfire sparks effect
+function CampfireSparks() {
+  const sparks = Array.from({ length: 18 });
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+      <style>{`
+        @keyframes floatUp {
+          0% { transform: translateY(105vh) translateX(0) scale(0.6); opacity: 0; }
+          20% { opacity: 0.8; }
+          80% { opacity: 0.8; }
+          100% { transform: translateY(-10vh) translateX(40px) scale(1.2); opacity: 0; }
+        }
+        .spark {
+          position: absolute;
+          bottom: -20px;
+          background: radial-gradient(circle, rgba(251,191,36,1) 0%, rgba(249,115,22,0.8) 50%, rgba(239,68,68,0) 100%);
+          border-radius: 50%;
+          animation: floatUp linear infinite;
+        }
+      `}</style>
+      {sparks.map((_, i) => {
+        const size = Math.random() * 6 + 3;
+        const left = Math.random() * 100;
+        const duration = Math.random() * 7 + 5;
+        const delay = Math.random() * 5;
+        return (
+          <div
+            key={i}
+            className="spark"
+            style={{
+              width: `${size}px`,
+              height: `${size}px`,
+              left: `${left}%`,
+              animationDuration: `${duration}s`,
+              animationDelay: `${delay}s`,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 function Navbar({ user, onLogout, onOpenProfile, activeTab, setActiveTab, theme, dark, setDark, goHome, onTriggerAuth }) {
   const navTabs = [
     { id: "feed", label: "Q&A Feed", icon: "message-square" },
@@ -78,19 +121,19 @@ function Navbar({ user, onLogout, onOpenProfile, activeTab, setActiveTab, theme,
   ];
 
   return (
-    <header className={`sticky top-0 z-40 backdrop-blur ${theme.navBg} border-b ${theme.navBorder}`}>
+    <header className={`sticky top-0 z-40 transition-colors duration-300 ${theme.navBg} border-b ${theme.navBorder}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-        <button onClick={goHome} className="flex items-center gap-2 shrink-0 group text-left">
-          <div className="relative h-9 w-9 rounded-lg bg-gradient-to-tr from-amber-600 to-red-500 flex items-center justify-center shadow-md shadow-amber-500/20">
+        <button onClick={goHome} className="flex items-center gap-2 shrink-0 group text-left transition-transform hover:scale-105">
+          <div className="relative h-9 w-9 rounded-xl bg-gradient-to-tr from-amber-600 to-red-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
             <Icon name="flame" className="h-5 w-5 text-amber-100 animate-pulse" strokeWidth={2.5} />
           </div>
           <span className={`font-display text-lg font-bold tracking-tight ${theme.textPrimary}`}>CampfireCred</span>
         </button>
 
         {user && (
-          <nav className={`hidden lg:flex items-center gap-1 rounded-full p-1 border ${theme.cardBorder} ${theme.pillBg}`}>
+          <nav className={`hidden lg:flex items-center gap-1 rounded-full p-1 border ${theme.cardBorder} ${theme.pillBg} shadow-inner`}>
             {navTabs.map((t) => (
-              <button key={t.id} onClick={() => setActiveTab(t.id)} className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs transition-all duration-200 ${activeTab === t.id ? theme.pillActive : theme.pillInactive}`}>
+              <button key={t.id} onClick={() => setActiveTab(t.id)} className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs transition-all duration-300 ${activeTab === t.id ? theme.pillActive : theme.pillInactive}`}>
                 <Icon name={t.icon} className="h-3.5 w-3.5" />{t.label}
               </button>
             ))}
@@ -99,7 +142,7 @@ function Navbar({ user, onLogout, onOpenProfile, activeTab, setActiveTab, theme,
 
         <div className="flex items-center gap-3 shrink-0">
           {!user ? (
-            <button onClick={onTriggerAuth} className="flex items-center gap-2.5 bg-white hover:bg-slate-100 text-slate-800 text-sm font-medium px-4 py-2 rounded-xl shadow-sm border border-slate-300 transition-all">
+            <button onClick={onTriggerAuth} className="flex items-center gap-2.5 bg-white hover:bg-slate-100 text-slate-800 text-sm font-medium px-4 py-2 rounded-xl shadow-md border border-slate-300 transition-all hover:scale-105 active:scale-95">
               <svg className="h-4 w-4" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
                 <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.19v3.15C3.18 21.31 7.23 24 12 24z"/>
@@ -110,20 +153,20 @@ function Navbar({ user, onLogout, onOpenProfile, activeTab, setActiveTab, theme,
             </button>
           ) : (
             <>
-              <button onClick={() => setActiveTab("leaderboard")} className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/40 rounded-full px-3 py-1">
+              <button onClick={() => setActiveTab("leaderboard")} className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/40 rounded-full px-3 py-1 transition-transform hover:scale-105">
                 <Icon name="flame" className="h-3.5 w-3.5 text-amber-500 animate-pulse" />
                 <span className="font-mono text-xs font-bold text-amber-500">{user.cred}</span>
                 <span className="text-[10px] text-amber-500/80 uppercase">Cred</span>
               </button>
-              <button onClick={onOpenProfile} className="h-8 w-8 rounded-full bg-gradient-to-r from-amber-500 to-indigo-600 text-white flex items-center justify-center text-xs font-semibold shadow-sm">
+              <button onClick={onOpenProfile} className="h-8 w-8 rounded-full bg-gradient-to-r from-amber-500 to-indigo-600 text-white flex items-center justify-center text-xs font-semibold shadow-md transition-transform hover:scale-105">
                 {user.initials}
               </button>
-              <button onClick={onLogout} className={`p-2 rounded-lg ${theme.textFaint} ${theme.hoverBg}`}>
+              <button onClick={onLogout} className={`p-2 rounded-lg ${theme.textFaint} ${theme.hoverBg} transition-colors`}>
                 <Icon name="log-out" className="h-4 w-4" />
               </button>
             </>
           )}
-          <button onClick={() => setDark(!dark)} aria-label="Toggle dark mode" className={`p-2 rounded-lg border ${theme.inputBorder} ${theme.hoverBg}`}>
+          <button onClick={() => setDark(!dark)} aria-label="Toggle dark mode" className={`p-2 rounded-lg border ${theme.inputBorder} ${theme.hoverBg} transition-transform hover:rotate-12`}>
             {dark ? <Icon name="sun" className="h-4 w-4 text-amber-400" /> : <Icon name="moon" className="h-4 w-4 text-slate-600" />}
           </button>
         </div>
@@ -134,8 +177,8 @@ function Navbar({ user, onLogout, onOpenProfile, activeTab, setActiveTab, theme,
 
 function Modal({ title, onClose, children, theme }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/70 p-0 sm:p-4 backdrop-blur-sm">
-      <div className={`rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-6 shadow-2xl ${theme.cardBg} border ${theme.cardBorder}`}>
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/70 p-0 sm:p-4 backdrop-blur-md animate-fadeIn">
+      <div className={`rounded-t-2xl sm:rounded-2xl w-full sm:max-w-md p-6 shadow-2xl ${theme.cardBg} border ${theme.cardBorder} transform transition-all`}>
         <div className="flex items-center justify-between mb-4">
           <h3 className={`font-display font-bold ${theme.textPrimary}`}>{title}</h3>
           <button onClick={onClose} className={`p-1 rounded-lg ${theme.textFaint} ${theme.hoverBg}`}><Icon name="x" className="h-4.5 w-4.5" /></button>
@@ -149,19 +192,16 @@ function Modal({ title, onClose, children, theme }) {
 function AuthModal({ onClose, onAuthenticate, theme }) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [step, setStep] = useState("email"); // 'email' or 'details'
+  const [step, setStep] = useState("email");
 
   const handleEmailNext = (e) => {
     e.preventDefault();
     if (!email.trim()) return;
     
-    // Check if user already exists in localStorage database
     const existingUsers = JSON.parse(localStorage.getItem("campfire_users") || "{}");
     if (existingUsers[email]) {
-      // Log them straight in
       onAuthenticate(existingUsers[email]);
     } else {
-      // Auto-extract name if it's a standard email format, else ask for details
       const derivedName = email.split("@")[0].replace(/[._]/g, " ");
       const capitalized = derivedName.charAt(0).toUpperCase() + derivedName.slice(1);
       setName(capitalized);
@@ -178,11 +218,10 @@ function AuthModal({ onClose, onAuthenticate, theme }) {
       email,
       studentId,
       initials,
-      cred: 100, // Welcome bonus creds for new user!
-      badges: ["Campfire Spark", "New Explorer"]
+      cred: 0, // Brand new users start with 0 creds as requested!
+      badges: ["Campfire Spark"]
     };
 
-    // Save to local database
     const existingUsers = JSON.parse(localStorage.getItem("campfire_users") || "{}");
     existingUsers[email] = newUser;
     localStorage.setItem("campfire_users", JSON.stringify(existingUsers));
@@ -224,7 +263,7 @@ function AuthModal({ onClose, onAuthenticate, theme }) {
       ) : (
         <form onSubmit={handleFinishSignup} className="space-y-4">
           <div className={`text-xs ${theme.textMuted} mb-2`}>
-            We noticed <span className={`font-mono font-semibold ${theme.textPrimary}`}>{email}</span> doesn't have a profile yet. Let's set up your student card!
+            We noticed <span className={`font-mono font-semibold ${theme.textPrimary}`}>{email}</span> is new. Let's configure your profile card!
           </div>
           <div>
             <label className={`block text-xs font-medium mb-1.5 ${theme.textSecondary}`}>Full Name</label>
@@ -237,10 +276,10 @@ function AuthModal({ onClose, onAuthenticate, theme }) {
             />
           </div>
           <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl">
-            <div className="text-[11px] text-amber-500 font-bold uppercase">New Student Bonus</div>
-            <div className={`text-xs mt-0.5 ${theme.textSecondary}`}>You will receive +100 Cred points to get started on questions and scheduling!</div>
+            <div className="text-[11px] text-amber-500 font-bold uppercase">Fresh Account</div>
+            <div className={`text-xs mt-0.5 ${theme.textSecondary}`}>Your starting balance is 0 Creds. Answer questions or participate in sessions to earn your rank!</div>
           </div>
-          <button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl shadow-md">
+          <button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl shadow-md transition-all">
             Create Profile & Enter Hub
           </button>
         </form>
@@ -253,7 +292,7 @@ function ProfileModal({ user, onClose, theme }) {
   return (
     <Modal title="Student Profile" onClose={onClose} theme={theme}>
       <div className="flex items-center gap-3">
-        <div className="h-14 w-14 rounded-full bg-gradient-to-tr from-amber-500 to-indigo-600 text-white flex items-center justify-center text-lg font-bold">{user.initials}</div>
+        <div className="h-14 w-14 rounded-full bg-gradient-to-tr from-amber-500 to-indigo-600 text-white flex items-center justify-center text-lg font-bold shadow-md">{user.initials}</div>
         <div>
           <div className={`font-display font-bold ${theme.textPrimary}`}>{user.name}</div>
           <div className={`text-xs ${theme.textFaint}`}>{user.email}</div>
@@ -278,7 +317,7 @@ function Hero({ theme, onTriggerAuth, goHome }) {
   return (
     <div className="relative overflow-hidden min-h-[calc(100vh-4rem)] flex flex-col justify-center">
       <div className="relative max-w-5xl mx-auto px-4 pt-12 pb-16 text-center z-10">
-        <button onClick={goHome} className="inline-block group mb-6 focus:outline-none">
+        <button onClick={goHome} className="inline-block group mb-6 focus:outline-none transition-transform hover:scale-105">
           <div className="inline-flex items-center justify-center p-4 bg-slate-900/80 border border-amber-500/30 rounded-2xl shadow-2xl backdrop-blur-md">
             <div className="flex items-center gap-3">
               <Icon name="flame" className="h-8 w-8 text-amber-500 animate-bounce" />
@@ -293,7 +332,7 @@ function Hero({ theme, onTriggerAuth, goHome }) {
           The peer learning platform for Scaler School of Technology. Ask technical questions, mentor fellow students, and schedule 1-on-1 sessions.
         </p>
         <div className="mt-8 flex justify-center">
-          <button onClick={onTriggerAuth} className="flex items-center gap-3 bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm px-8 py-3.5 rounded-xl shadow-lg border border-slate-300 transition-all">
+          <button onClick={onTriggerAuth} className="flex items-center gap-3 bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm px-8 py-3.5 rounded-xl shadow-xl border border-slate-300 transition-all hover:scale-105 active:scale-95">
             <svg className="h-5 w-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
               <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.19v3.15C3.18 21.31 7.23 24 12 24z"/>
@@ -329,28 +368,28 @@ function QAFeed({ questions, setQuestions, user, setUser, onCredAwarded, upvoted
   };
 
   return (
-    <div className="space-y-4 max-w-4xl mx-auto">
+    <div className="space-y-4 max-w-4xl mx-auto relative z-10 animate-fadeIn">
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Icon name="search" className={`h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 ${theme.textFaint}`} />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search technical discussions..." className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm focus:outline-none ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary}`} />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search technical discussions..." className={`w-full pl-9 pr-3 py-2.5 rounded-xl border text-sm focus:outline-none shadow-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary}`} />
         </div>
-        <button onClick={() => setShowAsk(true)} className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold text-sm px-5 py-2.5 rounded-xl shadow-md">
+        <button onClick={() => setShowAsk(true)} className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold text-sm px-5 py-2.5 rounded-xl shadow-lg transition-transform hover:scale-105 active:scale-95">
           <Icon name="plus" className="h-4 w-4" /> Ask Question
         </button>
       </div>
       <div className="flex flex-wrap gap-2">
         {TAGS.map((tag) => (
-          <button key={tag} onClick={() => toggleTag(tag)} className={`text-xs font-medium px-3 py-1.5 rounded-full border ${activeTags.includes(tag) ? "bg-amber-500 border-amber-500 text-slate-950 font-bold" : `${theme.cardBg} ${theme.inputBorder} ${theme.textSecondary}`}`}>
+          <button key={tag} onClick={() => toggleTag(tag)} className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-all ${activeTags.includes(tag) ? "bg-amber-500 border-amber-500 text-slate-950 font-bold shadow-md shadow-amber-500/20" : `${theme.cardBg} ${theme.inputBorder} ${theme.textSecondary} hover:border-amber-500/50`}`}>
             #{tag}
           </button>
         ))}
       </div>
       <div className="space-y-3">
         {filtered.map((q) => (
-          <div key={q.id} className={`rounded-2xl border p-5 ${theme.cardBg} ${theme.cardBorder}`}>
+          <div key={q.id} className={`rounded-2xl border p-5 transition-all hover:shadow-xl ${theme.cardBg} ${theme.cardBorder}`}>
             <div className="flex items-start gap-3.5">
-              <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-amber-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold">{q.initials}</div>
+              <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-amber-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-md">{q.initials}</div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`text-sm font-semibold ${theme.textPrimary}`}>{q.author}</span>
@@ -363,11 +402,11 @@ function QAFeed({ questions, setQuestions, user, setUser, onCredAwarded, upvoted
               </div>
             </div>
             <div className={`flex items-center justify-between mt-4 pt-3.5 border-t ${theme.divider}`}>
-              <button onClick={() => toggleUpvote(q.id)} className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border ${upvoted.has(q.id) ? "bg-amber-500/10 border-amber-500/50 text-amber-500" : `${theme.inputBorder} ${theme.textMuted}`}`}>
+              <button onClick={() => toggleUpvote(q.id)} className={`flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors ${upvoted.has(q.id) ? "bg-amber-500/10 border-amber-500/50 text-amber-500" : `${theme.inputBorder} ${theme.textMuted} ${theme.hoverBg}`}`}>
                 <Icon name="thumbs-up" className="h-3.5 w-3.5" /> {q.upvotes} Upvotes
               </button>
               {!q.solved ? (
-                <button onClick={() => solveQuestion(q.id)} className="flex items-center gap-1.5 text-xs font-bold bg-amber-400 hover:bg-amber-500 text-slate-950 px-3.5 py-1.5 rounded-lg">
+                <button onClick={() => solveQuestion(q.id)} className="flex items-center gap-1.5 text-xs font-bold bg-amber-400 hover:bg-amber-500 text-slate-950 px-3.5 py-1.5 rounded-lg shadow-md transition-transform hover:scale-105">
                   <Icon name="zap" className="h-3.5 w-3.5" /> Answer & Earn +50 Cred
                 </button>
               ) : <span className={`text-xs italic ${theme.textFaint}`}>Verified Solution</span>}
@@ -378,12 +417,12 @@ function QAFeed({ questions, setQuestions, user, setUser, onCredAwarded, upvoted
       {showAsk && (
         <Modal title="Ask the Community" onClose={() => setShowAsk(false)} theme={theme}>
           <div className="space-y-3.5">
-            <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Title..." className={`w-full border rounded-xl px-3 py-2 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary}`} />
-            <select value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value })} className={`w-full border rounded-xl px-3 py-2 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary}`}>
+            <input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Title..." className={`w-full border rounded-xl px-3 py-2 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none`} />
+            <select value={form.tag} onChange={(e) => setForm({ ...form, tag: e.target.value })} className={`w-full border rounded-xl px-3 py-2 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none`}>
               {TAGS.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
-            <textarea value={form.desc} onChange={(e) => setForm({ ...form, desc: e.target.value })} rows={4} placeholder="Description..." className={`w-full border rounded-xl px-3 py-2 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary}`} />
-            <button onClick={() => { if (!form.title) return; setQuestions([{ id: Date.now(), author: user.name, initials: user.initials, time: "just now", tag: form.tag, title: form.title, desc: form.desc, upvotes: 0, solved: false }, ...questions]); setShowAsk(false); }} className="w-full bg-amber-500 text-slate-950 font-bold py-2.5 rounded-xl">Publish</button>
+            <textarea value={form.desc} onChange={(e) => setForm({ ...form, desc: e.target.value })} rows={4} placeholder="Description..." className={`w-full border rounded-xl px-3 py-2 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none`} />
+            <button onClick={() => { if (!form.title) return; setQuestions([{ id: Date.now(), author: user.name, initials: user.initials, time: "just now", tag: form.tag, title: form.title, desc: form.desc, upvotes: 0, solved: false }, ...questions]); setShowAsk(false); }} className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl shadow-md transition-all">Publish Question</button>
           </div>
         </Modal>
       )}
@@ -397,26 +436,26 @@ function SchedulePage({ type, theme }) {
   const [confirmed, setConfirmed] = useState(null);
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-6 max-w-4xl mx-auto relative z-10 animate-fadeIn">
       <div>
         <h2 className={`font-display text-xl font-bold ${theme.textPrimary}`}>{type === "ta" ? "TA Meeting Scheduling" : "Peer-to-Peer Scheduling"}</h2>
         <p className={`text-sm mt-1 ${theme.textMuted}`}>Book office hours and mentorship sessions.</p>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         {list.map((p) => (
-          <div key={p.id} className={`rounded-2xl border p-5 ${theme.cardBg} ${theme.cardBorder} flex flex-col justify-between`}>
+          <div key={p.id} className={`rounded-2xl border p-5 ${theme.cardBg} ${theme.cardBorder} flex flex-col justify-between shadow-sm transition-all hover:shadow-xl`}>
             <div className="flex items-center gap-3">
-              <div className="h-11 w-11 rounded-full bg-gradient-to-tr from-amber-500 to-indigo-600 text-white flex items-center justify-center font-bold">{p.initials}</div>
+              <div className="h-11 w-11 rounded-full bg-gradient-to-tr from-amber-500 to-indigo-600 text-white flex items-center justify-center font-bold shadow-md">{p.initials}</div>
               <div>
                 <div className={`text-base font-bold ${theme.textPrimary}`}>{p.name}</div>
                 <div className="flex gap-1 mt-1 flex-wrap">{p.expertise.map((e) => <span key={e} className={`text-[10px] px-2 py-0.5 rounded-full ${theme.tagBg}`}>#{e}</span>)}</div>
               </div>
             </div>
             <div className="mt-5 pt-4 border-t border-slate-800/40 flex gap-2">
-              <select value={selected[p.id] || p.slots[0]} onChange={(e) => setSelected({ ...selected, [p.id]: e.target.value })} className={`w-full border rounded-xl px-3 py-2 text-xs ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary}`}>
+              <select value={selected[p.id] || p.slots[0]} onChange={(e) => setSelected({ ...selected, [p.id]: e.target.value })} className={`w-full border rounded-xl px-3 py-2 text-xs ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none`}>
                 {p.slots.map((s) => <option key={s} value={s}>{s}</option>)}
               </select>
-              <button onClick={() => setConfirmed({ person: p, slot: selected[p.id] || p.slots[0], link: genLink() })} className="bg-amber-500 text-slate-950 text-xs font-bold px-4 py-2 rounded-xl shrink-0">Request</button>
+              <button onClick={() => setConfirmed({ person: p, slot: selected[p.id] || p.slots[0], link: genLink() })} className="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold px-4 py-2 rounded-xl shrink-0 shadow-md transition-transform hover:scale-105">Request</button>
             </div>
           </div>
         ))}
@@ -436,15 +475,15 @@ function SchedulePage({ type, theme }) {
 function LeaderboardPage({ user, theme }) {
   const merged = [...leaderboardBase, { id: "me", name: user.name, initials: user.initials, cred: user.cred, badges: user.badges }].sort((a, b) => b.cred - a.cred);
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <div className={`rounded-2xl border ${theme.cardBg} ${theme.cardBorder} p-6 shadow-md`}>
+    <div className="space-y-6 max-w-4xl mx-auto relative z-10 animate-fadeIn">
+      <div className={`rounded-2xl border ${theme.cardBg} ${theme.cardBorder} p-6 shadow-xl`}>
         <h3 className={`font-display text-lg font-bold mb-4 ${theme.textPrimary}`}>Campfire Leaderboard</h3>
         <div className="space-y-2">
           {merged.map((entry, i) => (
-            <div key={entry.id} className={`flex items-center gap-4 p-3.5 rounded-xl ${entry.id === "me" ? "bg-amber-500/10 border border-amber-500/40" : ""}`}>
+            <div key={entry.id} className={`flex items-center gap-4 p-3.5 rounded-xl transition-all ${entry.id === "me" ? "bg-amber-500/10 border border-amber-500/40 shadow-sm" : "hover:bg-slate-500/5"}`}>
               <div className="w-6 text-center font-mono font-bold text-sm">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}</div>
-              <div className="h-10 w-10 rounded-full bg-slate-700 text-white flex items-center justify-center font-bold">{entry.initials}</div>
-              <div className="flex-1"><div className={`text-sm font-bold ${theme.textPrimary}`}>{entry.name} {entry.id === "me" && <span className="text-[10px] bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded-full ml-2">YOU</span>}</div></div>
+              <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-slate-700 to-slate-900 text-white flex items-center justify-center font-bold shadow-md">{entry.initials}</div>
+              <div className="flex-1"><div className={`text-sm font-bold ${theme.textPrimary}`}>{entry.name} {entry.id === "me" && <span className="text-[10px] bg-amber-500/20 text-amber-400 border border-amber-500/40 px-2 py-0.5 rounded-full ml-2">YOU</span>}</div></div>
               <div className="text-right font-mono font-bold text-amber-500">{entry.cred} Creds</div>
             </div>
           ))}
@@ -481,7 +520,8 @@ function CampfireCredApp() {
   };
 
   return (
-    <div className={`min-h-screen ${theme.appBg}`}>
+    <div className={`min-h-screen ${theme.appBg} relative overflow-x-hidden transition-colors duration-300`}>
+      <CampfireSparks />
       <Navbar 
         user={user} 
         onLogout={handleLogout} 
@@ -497,7 +537,7 @@ function CampfireCredApp() {
       {!user ? (
         <Hero theme={theme} dark={dark} onTriggerAuth={() => setShowAuth(true)} goHome={() => setActiveTab("feed")} />
       ) : (
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 relative z-10">
           {activeTab === "feed" && <QAFeed questions={questions} setQuestions={setQuestions} user={user} setUser={setUser} onCredAwarded={() => { setToast("+50 Cred Points Added!"); setTimeout(() => setToast(null), 2000); }} upvoted={upvoted} setUpvoted={setUpvoted} theme={theme} />}
           {activeTab === "ta_hours" && <SchedulePage type="ta" theme={theme} />}
           {activeTab === "peer_hours" && <SchedulePage type="peer" theme={theme} />}
@@ -506,7 +546,7 @@ function CampfireCredApp() {
       )}
       {showAuth && <AuthModal onClose={() => setShowAuth(false)} onAuthenticate={handleAuthenticate} theme={theme} />}
       {showProfile && user && <ProfileModal user={user} onClose={() => setShowProfile(false)} theme={theme} />}
-      {toast && <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-amber-500 text-slate-950 text-sm font-bold px-5 py-2.5 rounded-full shadow-2xl animate-bounce">{toast}</div>}
+      {toast && <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-amber-500 text-slate-950 text-sm font-bold px-5 py-2.5 rounded-full shadow-2xl animate-bounce">{toast}</div>}
     </div>
   );
 }
