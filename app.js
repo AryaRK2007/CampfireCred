@@ -69,18 +69,7 @@ function Icon({ name, className = "h-4 w-4", strokeWidth = 2 }) {
   return <span ref={ref} className="inline-flex items-center justify-center" />;
 }
 
-function Navbar({ user, onLogin, onLogout, onOpenProfile, activeTab, setActiveTab, theme, dark, setDark, goHome }) {
-  const handleGoogleSignIn = () => {
-    onLogin({
-      name: "Arya Ravindra Koshti",
-      email: "arya.26bcs10491@sst.scaler.com",
-      studentId: "26BCS10491",
-      initials: "AK",
-      cred: 450,
-      badges: ["Early Adopter", "Campfire Spark"]
-    });
-  };
-
+function Navbar({ user, onLogout, onOpenProfile, activeTab, setActiveTab, theme, dark, setDark, goHome, onTriggerAuth }) {
   const navTabs = [
     { id: "feed", label: "Q&A Feed", icon: "message-square" },
     { id: "ta_hours", label: "TA Hours", icon: "user-check" },
@@ -110,7 +99,13 @@ function Navbar({ user, onLogin, onLogout, onOpenProfile, activeTab, setActiveTa
 
         <div className="flex items-center gap-3 shrink-0">
           {!user ? (
-            <button onClick={handleGoogleSignIn} className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-medium px-4 py-2 rounded-lg shadow-md border border-slate-700">
+            <button onClick={onTriggerAuth} className="flex items-center gap-2.5 bg-white hover:bg-slate-100 text-slate-800 text-sm font-medium px-4 py-2 rounded-xl shadow-sm border border-slate-300 transition-all">
+              <svg className="h-4 w-4" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.19v3.15C3.18 21.31 7.23 24 12 24z"/>
+                <path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.5-.38-2.24s.13-1.52.38-2.24V6.6H1.19C.43 8.13 0 9.87 0 11.7s.43 3.57 1.19 5.1l4.08-2.56z"/>
+                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.23 0 3.18 2.69 1.19 6.6l4.08 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/>
+              </svg>
               Sign in with Google
             </button>
           ) : (
@@ -151,6 +146,109 @@ function Modal({ title, onClose, children, theme }) {
   );
 }
 
+function AuthModal({ onClose, onAuthenticate, theme }) {
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [step, setStep] = useState("email"); // 'email' or 'details'
+
+  const handleEmailNext = (e) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    
+    // Check if user already exists in localStorage database
+    const existingUsers = JSON.parse(localStorage.getItem("campfire_users") || "{}");
+    if (existingUsers[email]) {
+      // Log them straight in
+      onAuthenticate(existingUsers[email]);
+    } else {
+      // Auto-extract name if it's a standard email format, else ask for details
+      const derivedName = email.split("@")[0].replace(/[._]/g, " ");
+      const capitalized = derivedName.charAt(0).toUpperCase() + derivedName.slice(1);
+      setName(capitalized);
+      setStep("details");
+    }
+  };
+
+  const handleFinishSignup = (e) => {
+    e.preventDefault();
+    const initials = name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "U";
+    const studentId = "26" + Math.floor(10000 + Math.random() * 90000);
+    const newUser = {
+      name,
+      email,
+      studentId,
+      initials,
+      cred: 100, // Welcome bonus creds for new user!
+      badges: ["Campfire Spark", "New Explorer"]
+    };
+
+    // Save to local database
+    const existingUsers = JSON.parse(localStorage.getItem("campfire_users") || "{}");
+    existingUsers[email] = newUser;
+    localStorage.setItem("campfire_users", JSON.stringify(existingUsers));
+
+    onAuthenticate(newUser);
+  };
+
+  return (
+    <Modal title="Google Account Sign-In" onClose={onClose} theme={theme}>
+      {step === "email" ? (
+        <form onSubmit={handleEmailNext} className="space-y-4">
+          <div className="flex items-center justify-center p-4 bg-blue-500/10 rounded-xl border border-blue-500/20 mb-2">
+            <svg className="h-8 w-8 mr-3" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.19v3.15C3.18 21.31 7.23 24 12 24z"/>
+              <path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.5-.38-2.24s.13-1.52.38-2.24V6.6H1.19C.43 8.13 0 9.87 0 11.7s.43 3.57 1.19 5.1l4.08-2.56z"/>
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.23 0 3.18 2.69 1.19 6.6l4.08 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/>
+            </svg>
+            <div>
+              <div className={`text-sm font-bold ${theme.textPrimary}`}>Google Identity Services</div>
+              <div className={`text-xs ${theme.textFaint}`}>Continue to CampfireCred</div>
+            </div>
+          </div>
+          <div>
+            <label className={`block text-xs font-medium mb-1.5 ${theme.textSecondary}`}>Email address</label>
+            <input 
+              type="email" 
+              required
+              value={email} 
+              onChange={(e) => setEmail(e.target.value)} 
+              placeholder="name@scaler.com or gmail.com" 
+              className={`w-full border rounded-xl px-3.5 py-2.5 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none focus:ring-2 focus:ring-amber-500/50`}
+            />
+          </div>
+          <button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl shadow-md transition-all">
+            Next
+          </button>
+        </form>
+      ) : (
+        <form onSubmit={handleFinishSignup} className="space-y-4">
+          <div className={`text-xs ${theme.textMuted} mb-2`}>
+            We noticed <span className={`font-mono font-semibold ${theme.textPrimary}`}>{email}</span> doesn't have a profile yet. Let's set up your student card!
+          </div>
+          <div>
+            <label className={`block text-xs font-medium mb-1.5 ${theme.textSecondary}`}>Full Name</label>
+            <input 
+              type="text" 
+              required
+              value={name} 
+              onChange={(e) => setName(e.target.value)} 
+              className={`w-full border rounded-xl px-3.5 py-2.5 text-sm ${theme.inputBg} ${theme.inputBorder} ${theme.textPrimary} focus:outline-none`}
+            />
+          </div>
+          <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl">
+            <div className="text-[11px] text-amber-500 font-bold uppercase">New Student Bonus</div>
+            <div className={`text-xs mt-0.5 ${theme.textSecondary}`}>You will receive +100 Cred points to get started on questions and scheduling!</div>
+          </div>
+          <button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-xl shadow-md">
+            Create Profile & Enter Hub
+          </button>
+        </form>
+      )}
+    </Modal>
+  );
+}
+
 function ProfileModal({ user, onClose, theme }) {
   return (
     <Modal title="Student Profile" onClose={onClose} theme={theme}>
@@ -176,7 +274,7 @@ function ProfileModal({ user, onClose, theme }) {
   );
 }
 
-function Hero({ theme, onLogin, goHome }) {
+function Hero({ theme, onTriggerAuth, goHome }) {
   return (
     <div className="relative overflow-hidden min-h-[calc(100vh-4rem)] flex flex-col justify-center">
       <div className="relative max-w-5xl mx-auto px-4 pt-12 pb-16 text-center z-10">
@@ -195,8 +293,14 @@ function Hero({ theme, onLogin, goHome }) {
           The peer learning platform for Scaler School of Technology. Ask technical questions, mentor fellow students, and schedule 1-on-1 sessions.
         </p>
         <div className="mt-8 flex justify-center">
-          <button onClick={() => onLogin({ name: "Arya Ravindra Koshti", email: "arya.26bcs10491@sst.scaler.com", studentId: "26BCS10491", initials: "AK", cred: 450, badges: ["Early Adopter"] })} className="flex items-center gap-3 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-bold text-sm px-8 py-3.5 rounded-xl shadow-lg shadow-amber-500/25">
-            Sign in with SST Google Account
+          <button onClick={onTriggerAuth} className="flex items-center gap-3 bg-white hover:bg-slate-100 text-slate-900 font-bold text-sm px-8 py-3.5 rounded-xl shadow-lg border border-slate-300 transition-all">
+            <svg className="h-5 w-5" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.66-5.17 3.66-9.17z"/>
+              <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.13 0-5.78-2.11-6.73-4.96H1.19v3.15C3.18 21.31 7.23 24 12 24z"/>
+              <path fill="#FBBC05" d="M5.27 14.24c-.25-.72-.38-1.5-.38-2.24s.13-1.52.38-2.24V6.6H1.19C.43 8.13 0 9.87 0 11.7s.43 3.57 1.19 5.1l4.08-2.56z"/>
+              <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.23 0 3.18 2.69 1.19 6.6l4.08 3.15c.95-2.85 3.6-4.96 6.73-4.96z"/>
+            </svg>
+            Sign in with Google Account
           </button>
         </div>
       </div>
@@ -352,20 +456,46 @@ function LeaderboardPage({ user, theme }) {
 
 function CampfireCredApp() {
   const [dark, setDark] = useState(true);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const saved = localStorage.getItem("campfire_active_user");
+    return saved ? JSON.parse(saved) : null;
+  });
   const [activeTab, setActiveTab] = useState("feed");
   const [showProfile, setShowProfile] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
   const [questions, setQuestions] = useState(initialQuestions);
   const [upvoted, setUpvoted] = useState(new Set());
   const [toast, setToast] = useState(null);
 
   const theme = getTheme(dark);
 
+  const handleAuthenticate = (loggedInUser) => {
+    setUser(loggedInUser);
+    localStorage.setItem("campfire_active_user", JSON.stringify(loggedInUser));
+    setShowAuth(false);
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem("campfire_active_user");
+  };
+
   return (
     <div className={`min-h-screen ${theme.appBg}`}>
-      <Navbar user={user} onLogin={setUser} onLogout={() => setUser(null)} onOpenProfile={() => setShowProfile(true)} activeTab={activeTab} setActiveTab={setActiveTab} theme={theme} dark={dark} setDark={setDark} goHome={() => setActiveTab("feed")} />
+      <Navbar 
+        user={user} 
+        onLogout={handleLogout} 
+        onOpenProfile={() => setShowProfile(true)} 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        theme={theme} 
+        dark={dark} 
+        setDark={setDark} 
+        goHome={() => setActiveTab("feed")} 
+        onTriggerAuth={() => setShowAuth(true)}
+      />
       {!user ? (
-        <Hero theme={theme} dark={dark} onLogin={setUser} goHome={() => setActiveTab("feed")} />
+        <Hero theme={theme} dark={dark} onTriggerAuth={() => setShowAuth(true)} goHome={() => setActiveTab("feed")} />
       ) : (
         <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
           {activeTab === "feed" && <QAFeed questions={questions} setQuestions={setQuestions} user={user} setUser={setUser} onCredAwarded={() => { setToast("+50 Cred Points Added!"); setTimeout(() => setToast(null), 2000); }} upvoted={upvoted} setUpvoted={setUpvoted} theme={theme} />}
@@ -374,6 +504,7 @@ function CampfireCredApp() {
           {activeTab === "leaderboard" && <LeaderboardPage user={user} theme={theme} />}
         </main>
       )}
+      {showAuth && <AuthModal onClose={() => setShowAuth(false)} onAuthenticate={handleAuthenticate} theme={theme} />}
       {showProfile && user && <ProfileModal user={user} onClose={() => setShowProfile(false)} theme={theme} />}
       {toast && <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-amber-500 text-slate-950 text-sm font-bold px-5 py-2.5 rounded-full shadow-2xl animate-bounce">{toast}</div>}
     </div>
